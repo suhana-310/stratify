@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { authAPI, usersAPI } from '../services/api';
+import socketService from '../services/socket';
 
 const AuthContext = createContext();
 
@@ -7,8 +9,10 @@ const AuthContext = createContext();
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'LOGIN_START':
+    case 'REGISTER_START':
       return { ...state, loading: true, error: null };
     case 'LOGIN_SUCCESS':
+    case 'REGISTER_SUCCESS':
       return { 
         ...state, 
         loading: false, 
@@ -18,6 +22,7 @@ const authReducer = (state, action) => {
         error: null 
       };
     case 'LOGIN_ERROR':
+    case 'REGISTER_ERROR':
       return { ...state, loading: false, error: action.payload, isAuthenticated: false };
     case 'LOGOUT':
       return { 
@@ -32,6 +37,8 @@ const authReducer = (state, action) => {
       return { ...state, loading: action.payload };
     case 'CLEAR_ERROR':
       return { ...state, error: null };
+    case 'UPDATE_USER':
+      return { ...state, user: action.payload };
     default:
       return state;
   }
@@ -48,23 +55,84 @@ const initialState = {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  // Check for existing token on mount
+  // Check for existing auth on mount
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    const user = localStorage.getItem('auth_user');
-    
-    if (token && user) {
+    const checkAuth = async () => {
+      dispatch({ type: 'SET_LOADING', payload: true });
+      
       try {
-        const parsedUser = JSON.parse(user);
-        dispatch({
-          type: 'LOGIN_SUCCESS',
-          payload: { user: parsedUser, token }
-        });
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const storedUser = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
+        
+        if (token && storedUser) {
+          try {
+            // Parse stored user to validate it
+            const parsedUser = JSON.parse(storedUser);
+            
+            // Verify token is still valid by fetching current user
+            const response = await authAPI.getCurrentUser();
+            dispatch({
+              type: 'LOGIN_SUCCESS',
+              payload: { user: response.user, token }
+            });
+            
+            // Connect to Socket.IO
+            socketService.connect(token);
+          } catch (error) {
+            console.log('Token validation failed:', error.message);
+            
+            // If it's a network error, don't clear auth immediately
+            if (error.message.includes('fetch') || error.message.includes('network')) {
+              console.log('Network error during auth check, keeping stored auth');
+              try {
+                const parsedUser = JSON.parse(storedUser);
+                dispatch({
+                  type: 'LOGIN_SUCCESS',
+                  payload: { user: parsedUser, token }
+                });
+                // Try to connect to Socket.IO anyway
+                socketService.connect(token);
+              } catch (parseError) {
+                console.log('Failed to parse stored user, clearing auth');
+                clearAuthData();
+              }
+            } else {
+              // Token is invalid, try to refresh
+              try {
+                const refreshResponse = await authAPI.refreshToken();
+                dispatch({
+                  type: 'LOGIN_SUCCESS',
+                  payload: { user: refreshResponse.user, token: refreshResponse.token }
+                });
+                
+                // Connect to Socket.IO
+                socketService.connect(refreshResponse.token);
+              } catch (refreshError) {
+                console.log('Token refresh failed:', refreshError.message);
+                clearAuthData();
+              }
+            }
+          }
+        }
       } catch (error) {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+        console.error('Auth check failed:', error);
+        clearAuthData();
+      } finally {
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-    }
+    };
+
+    const clearAuthData = () => {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      localStorage.removeItem('refresh_token');
+      sessionStorage.removeItem('auth_token');
+      sessionStorage.removeItem('auth_user');
+      sessionStorage.removeItem('refresh_token');
+      dispatch({ type: 'LOGOUT' });
+    };
+
+    checkAuth();
   }, []);
 
   // Login function
@@ -72,33 +140,15 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'LOGIN_START' });
     
     try {
-      // Simulate API call - replace with actual API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock successful login
-      const mockUser = {
-        id: '1',
-        name: credentials.name || 'John Doe',
-        email: credentials.email,
-        avatar: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 50) + 1}.jpg`,
-        role: 'admin'
-      };
-      
-      const mockToken = 'mock_jwt_token_' + Date.now();
-      
-      // Store in localStorage if remember me is checked
-      if (rememberMe) {
-        localStorage.setItem('auth_token', mockToken);
-        localStorage.setItem('auth_user', JSON.stringify(mockUser));
-      } else {
-        sessionStorage.setItem('auth_token', mockToken);
-        sessionStorage.setItem('auth_user', JSON.stringify(mockUser));
-      }
+      const response = await authAPI.login({ ...credentials, rememberMe });
       
       dispatch({
         type: 'LOGIN_SUCCESS',
-        payload: { user: mockUser, token: mockToken }
+        payload: { user: response.user, token: response.token }
       });
+      
+      // Connect to Socket.IO
+      socketService.connect(response.token);
       
       toast.success('Welcome back!');
       return { success: true };
@@ -111,75 +161,44 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Social login function
-  const socialLogin = async (provider) => {
-    dispatch({ type: 'LOGIN_START' });
+  // Register function
+  const register = async (userData) => {
+    dispatch({ type: 'REGISTER_START' });
     
     try {
-      // Simulate social login - replace with actual OAuth implementation
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const mockUser = {
-        id: '1',
-        name: `User from ${provider}`,
-        email: `user@${provider.toLowerCase()}.com`,
-        avatar: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 50) + 1}.jpg`,
-        role: 'user',
-        provider
-      };
-      
-      const mockToken = `${provider}_token_` + Date.now();
-      
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('auth_user', JSON.stringify(mockUser));
+      const response = await authAPI.register(userData);
       
       dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user: mockUser, token: mockToken }
+        type: 'REGISTER_SUCCESS',
+        payload: { user: response.user, token: response.token }
       });
       
-      toast.success(`Welcome! Signed in with ${provider}`);
+      // Connect to Socket.IO
+      socketService.connect(response.token);
+      
+      toast.success('Registration successful! Welcome to Stratify!');
       return { success: true };
       
     } catch (error) {
-      const errorMessage = `${provider} login failed`;
-      dispatch({ type: 'LOGIN_ERROR', payload: errorMessage });
+      const errorMessage = error.message || 'Registration failed';
+      dispatch({ type: 'REGISTER_ERROR', payload: errorMessage });
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
     }
   };
 
-  // Register function
-  const register = async (userData) => {
+  // Social login function
+  const socialLogin = async (provider) => {
     dispatch({ type: 'LOGIN_START' });
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      const mockUser = {
-        id: Date.now().toString(),
-        name: userData.name,
-        email: userData.email,
-        avatar: `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 50) + 1}.jpg`,
-        role: 'user'
-      };
-      
-      const mockToken = 'new_user_token_' + Date.now();
-      
-      localStorage.setItem('auth_token', mockToken);
-      localStorage.setItem('auth_user', JSON.stringify(mockUser));
-      
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: { user: mockUser, token: mockToken }
-      });
-      
-      toast.success('Account created successfully!');
-      return { success: true };
+      // TODO: Implement OAuth integration
+      toast.info(`${provider} login will be available soon!`);
+      dispatch({ type: 'LOGIN_ERROR', payload: 'Social login not yet implemented' });
+      return { success: false, error: 'Social login not yet implemented' };
       
     } catch (error) {
-      const errorMessage = error.message || 'Registration failed';
+      const errorMessage = error.message || 'Social login failed';
       dispatch({ type: 'LOGIN_ERROR', payload: errorMessage });
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
@@ -187,14 +206,113 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Logout function
-  const logout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
-    sessionStorage.removeItem('auth_token');
-    sessionStorage.removeItem('auth_user');
+  const logout = async () => {
+    try {
+      await authAPI.logout();
+      socketService.disconnect();
+      dispatch({ type: 'LOGOUT' });
+      toast.success('Logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still logout locally even if API call fails
+      socketService.disconnect();
+      dispatch({ type: 'LOGOUT' });
+      toast.success('Logged out successfully');
+    }
+  };
+
+  // Forgot password function
+  const forgotPassword = async (email) => {
+    dispatch({ type: 'SET_LOADING', payload: true });
     
-    dispatch({ type: 'LOGOUT' });
-    toast.success('Logged out successfully');
+    try {
+      await authAPI.forgotPassword(email);
+      toast.success('Password reset email sent! Check your inbox.');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.message || 'Failed to send reset email';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
+  // Reset password function
+  const resetPassword = async (token, password, confirmPassword) => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    
+    try {
+      const response = await authAPI.resetPassword(token, password, confirmPassword);
+      
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: { user: response.user, token: response.token }
+      });
+      
+      toast.success('Password reset successful!');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.message || 'Password reset failed';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
+  // Change password function
+  const changePassword = async (currentPassword, newPassword, confirmNewPassword) => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    
+    try {
+      const response = await authAPI.changePassword(currentPassword, newPassword, confirmNewPassword);
+      
+      // Update token if new one is provided
+      if (response.token) {
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: { user: response.user, token: response.token }
+        });
+      }
+      
+      toast.success('Password changed successfully!');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.message || 'Password change failed';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
+  };
+
+  // Update user profile
+  const updateProfile = async (userData) => {
+    dispatch({ type: 'SET_LOADING', payload: true });
+    
+    try {
+      const response = await usersAPI.updateUser(state.user.id, userData);
+      
+      dispatch({ type: 'UPDATE_USER', payload: response.user });
+      
+      // Update stored user data
+      const isLocalStorage = localStorage.getItem('auth_user');
+      if (isLocalStorage) {
+        localStorage.setItem('auth_user', JSON.stringify(response.user));
+      } else {
+        sessionStorage.setItem('auth_user', JSON.stringify(response.user));
+      }
+      
+      toast.success('Profile updated successfully!');
+      return { success: true };
+    } catch (error) {
+      const errorMessage = error.message || 'Profile update failed';
+      toast.error(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
   };
 
   // Clear error function
@@ -205,9 +323,13 @@ export const AuthProvider = ({ children }) => {
   const value = {
     ...state,
     login,
-    socialLogin,
     register,
+    socialLogin,
     logout,
+    forgotPassword,
+    resetPassword,
+    changePassword,
+    updateProfile,
     clearError
   };
 

@@ -1,478 +1,337 @@
-# 🚀 Advanced Project Management System
+# Stratify - Real-time Project Management System
 
-> A modern, feature-rich project management platform built with React 18+ and cutting-edge web technologies
+A modern, full-stack project management system with real-time collaboration features, built with React, Node.js, MongoDB, and Socket.IO.
 
-[![React](https://img.shields.io/badge/React-18.2+-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3+-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Three.js](https://img.shields.io/badge/Three.js-0.158+-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+## 🚀 Features
 
-**Experience the future of project management** with our advanced 3D-powered platform featuring intelligent UI, real-time collaboration, and stunning visual effects.
+### Authentication & Security
+- ✅ **Real-time Authentication** - JWT-based auth with refresh tokens
+- ✅ **User Registration & Login** - Complete signup/signin flow
+- ✅ **Email Confirmation** - Welcome email sent upon successful registration
+- ✅ **Password Reset** - Email-based password recovery
+- ✅ **Role-based Access Control** - Admin, Manager, Member roles
+- ✅ **Session Management** - Secure token handling
+- ✅ **Route Protection** - Dashboard only accessible after authentication
+- 🔄 **Social Login** - Google & GitHub OAuth (coming soon)
 
-## ✨ Features
+### Real-time Collaboration
+- ✅ **Live Updates** - Real-time project and user updates
+- ✅ **Online Status** - See who's online/offline
+- ✅ **Typing Indicators** - Real-time typing status
+- ✅ **Instant Notifications** - Toast notifications for all events
+- ✅ **Project Invitations** - Real-time team invitations
 
-<div align="center">
-  <img src="https://via.placeholder.com/800x400/4F46E5/FFFFFF?text=Dashboard+Preview" alt="Dashboard Preview" width="100%" style="border-radius: 12px; margin: 20px 0;">
-</div>
+### Project Management
+- ✅ **Project Creation** - Create and manage projects
+- ✅ **Team Management** - Add/remove team members
+- ✅ **Role Permissions** - Granular permission system
+- ✅ **Project Dashboard** - Overview and analytics
+- ✅ **Activity Logging** - Track all project activities
 
-### 🎯 Core Functionality
-- **📊 Dashboard Overview** - Real-time analytics with interactive charts and KPI tracking
-- **📁 Project Management** - Complete project lifecycle management with progress monitoring
-- **📋 Kanban Board** - Visual task management with drag-and-drop and custom workflows
-- **📅 Calendar View** - Advanced scheduling with deadline tracking and event management
-- **👥 Team Management** - User roles, permissions, and collaboration tools
-- **📈 Analytics** - Comprehensive reporting with performance insights
-- **⚙️ Settings** - Extensive customization and workspace management
-
-### 🚀 Advanced Features
-- **🌟 3D Interactive Background** - WebGL-powered particle effects with Three.js
-- **🧠 Smart Sidebar** - AI-powered auto-close with 0.01s response time
-- **🎨 Smooth Animations** - GSAP-powered micro-interactions and scroll effects
-- **⌨️ Command Palette** - Quick actions with keyboard shortcuts (⌘K)
-- **🔍 Advanced Search** - Global search with filters and real-time suggestions
-- **📱 Responsive Design** - Mobile-first approach with adaptive layouts
-- **🌙 Theme System** - Light/dark mode with smooth transitions
-
-### 🔧 Technical Excellence
-- **⚡ Performance Optimized** - Code splitting, lazy loading, and intelligent caching
-- **🔄 Real-time Updates** - Live data synchronization and notifications
-- **♿ Accessibility** - WCAG compliant with full keyboard navigation
-- **🛡️ Error Handling** - Comprehensive error boundaries and graceful fallbacks
-- **🔒 Security** - Input validation, XSS protection, and secure headers
+### Modern UI/UX
+- ✅ **3D Animations** - Three.js powered backgrounds
+- ✅ **Smooth Scrolling** - GSAP animations
+- ✅ **Responsive Design** - Mobile-first approach
+- ✅ **Dark/Light Theme** - Theme switching
+- ✅ **Loading States** - Skeleton screens and spinners
 
 ## 🛠️ Tech Stack
 
-<div align="center">
+### Frontend
+- **React 18** - Modern React with hooks
+- **Vite** - Fast build tool
+- **Tailwind CSS** - Utility-first styling
+- **Framer Motion** - Smooth animations
+- **Three.js** - 3D graphics
+- **GSAP** - Advanced animations
+- **Socket.IO Client** - Real-time communication
+- **React Hook Form** - Form handling
+- **Zod** - Schema validation
 
-| Category | Technologies |
-|----------|-------------|
-| **Frontend Core** | ![React](https://img.shields.io/badge/React-18.2+-61DAFB?style=flat-square&logo=react) ![Vite](https://img.shields.io/badge/Vite-5.0+-646CFF?style=flat-square&logo=vite) ![Tailwind](https://img.shields.io/badge/Tailwind-3.3+-38B2AC?style=flat-square&logo=tailwind-css) |
-| **Animation & 3D** | ![Three.js](https://img.shields.io/badge/Three.js-0.158+-000000?style=flat-square&logo=three.js) ![Framer Motion](https://img.shields.io/badge/Framer_Motion-10.16+-0055FF?style=flat-square) ![GSAP](https://img.shields.io/badge/GSAP-3.14+-88CE02?style=flat-square) |
-| **State & Routing** | ![Zustand](https://img.shields.io/badge/Zustand-4.4+-FF6B6B?style=flat-square) ![React Router](https://img.shields.io/badge/React_Router-6.20+-CA4245?style=flat-square) |
-| **UI & Interactions** | ![Lucide](https://img.shields.io/badge/Lucide-0.294+-000000?style=flat-square) ![DnD Kit](https://img.shields.io/badge/DnD_Kit-Latest-4A90E2?style=flat-square) |
-| **Development** | ![ESLint](https://img.shields.io/badge/ESLint-8.53+-4B32C3?style=flat-square&logo=eslint) ![PostCSS](https://img.shields.io/badge/PostCSS-8.4+-DD3A0A?style=flat-square&logo=postcss) |
+### Backend
+- **Node.js** - JavaScript runtime
+- **Express.js** - Web framework
+- **MongoDB** - NoSQL database
+- **Mongoose** - MongoDB ODM
+- **Socket.IO** - Real-time engine
+- **JWT** - Authentication tokens
+- **bcryptjs** - Password hashing
+- **Nodemailer** - Email service
 
-</div>
+## 📦 Installation & Setup
 
-### 🎨 Frontend Architecture
-- **React 18.2+** - Modern React with concurrent features and Suspense
-- **Vite 5.0** - Lightning-fast build tool with HMR and optimized bundling
-- **Tailwind CSS 3.3+** - Utility-first CSS with custom design system
-- **TypeScript Ready** - Full TypeScript support for enhanced development experience
+### Prerequisites
+- Node.js 18+ 
+- MongoDB (local or Atlas)
+- Git
 
-### 🎭 Animation & 3D Graphics
-- **Three.js 0.158+** - WebGL-powered 3D graphics and particle systems
-- **@react-three/fiber 8.15+** - React renderer for Three.js with hooks
-- **@react-three/drei 9.88+** - Essential helpers and abstractions
-- **Framer Motion 10.16+** - Production-ready motion library
-- **GSAP 3.14+** - Professional animation with ScrollTrigger
+### 1. Clone the Repository
+```bash
+git clone <repository-url>
+cd stratify
+```
 
-### 🗂️ State Management & Data Flow
-- **Zustand 4.4+** - Lightweight, scalable state management
-- **React Router 6.20+** - Declarative routing with data loading
-- **React Hook Form 7.48+** - Performant forms with validation
-- **Zod 3.22+** - TypeScript-first schema validation
+### 2. Backend Setup
+```bash
+cd backend
+
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Edit .env with your configuration
+# - Set MongoDB URI
+# - Set JWT secrets
+# - Configure email settings (optional for development)
+
+# Test email system (optional)
+npm run test-email
+
+# Seed the database with sample data
+npm run seed
+
+# Start the backend server
+npm run dev
+```
+
+The backend will run on `http://localhost:5000`
+
+### 3. Frontend Setup
+```bash
+cd ../frontend
+
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Edit .env if needed (API URL should match backend)
+
+# Start the frontend development server
+npm run dev
+```
+
+The frontend will run on `http://localhost:5173`
+
+## 🔐 Default Login Credentials
+
+After running the seed script, you can login with these accounts:
+
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@company.com | admin123 |
+| Manager | sarah@company.com | password123 |
+| Member | mike@company.com | password123 |
+| Member | emily@company.com | password123 |
+| Member | alex@company.com | password123 |
+
+## 🚀 Quick Start
+
+1. **Start MongoDB** (if running locally)
+2. **Start Backend**: `cd backend && npm run dev`
+3. **Start Frontend**: `cd frontend && npm run dev`
+4. **Open Browser**: Navigate to `http://localhost:5173`
+5. **Login**: Use any of the default credentials above
 
 ## 📁 Project Structure
 
 ```
-Project-Management-System/
-├── frontend/                          # React application
-│   ├── public/                        # Static assets
-│   │   ├── logo.png                   # Application logo
-│   │   └── vite.svg                   # Vite logo
-│   ├── src/                           # Source code
-│   │   ├── components/                # React components
-│   │   │   ├── 3d/                    # Three.js 3D components
-│   │   │   │   └── Background3D.jsx   # Interactive 3D background
-│   │   │   ├── animations/            # Animation components
-│   │   │   │   ├── HorizontalScroll.jsx
-│   │   │   │   ├── MagneticButton.jsx
-│   │   │   │   ├── ParallaxElement.jsx
-│   │   │   │   ├── PinSection.jsx
-│   │   │   │   ├── ScrollReveal.jsx
-│   │   │   │   └── TextReveal.jsx
-│   │   │   ├── auth/                  # Authentication components
-│   │   │   │   ├── ProtectedRoute.jsx
-│   │   │   │   └── UserMenu.jsx
-│   │   │   ├── common/                # Shared components
-│   │   │   │   └── Copyright.jsx
-│   │   │   ├── dashboard/             # Dashboard components
-│   │   │   │   ├── AnalyticsView.jsx  # Performance analytics
-│   │   │   │   ├── AutoCloseIndicator.jsx # Smart sidebar indicator
-│   │   │   │   ├── CalendarDropdown.jsx
-│   │   │   │   ├── CalendarView.jsx   # Calendar and scheduling
-│   │   │   │   ├── CommandPalette.jsx # Quick actions (⌘K)
-│   │   │   │   ├── DashboardHeader.jsx # Advanced header with search
-│   │   │   │   ├── DashboardOverview.jsx # Main dashboard
-│   │   │   │   ├── EmptyState.jsx
-│   │   │   │   ├── FilterDropdown.jsx
-│   │   │   │   ├── KanbanView.jsx     # Drag & drop kanban board
-│   │   │   │   ├── NewProjectModal.jsx
-│   │   │   │   ├── ProjectsView.jsx   # Project management
-│   │   │   │   ├── SearchDropdown.jsx # Advanced search
-│   │   │   │   ├── SettingsView.jsx   # Account settings
-│   │   │   │   ├── Sidebar.jsx        # Smart auto-close sidebar
-│   │   │   │   ├── SkeletonCard.jsx
-│   │   │   │   ├── TeamView.jsx       # Team management
-│   │   │   │   └── Tooltip.jsx
-│   │   │   ├── error/                 # Error handling
-│   │   │   │   └── ErrorBoundary.jsx
-│   │   │   ├── layout/                # Layout components
-│   │   │   │   ├── Footer.jsx
-│   │   │   │   ├── Navbar.jsx
-│   │   │   │   └── Navigation.jsx
-│   │   │   ├── sections/              # Landing page sections
-│   │   │   │   ├── CTA.jsx
-│   │   │   │   ├── DashboardPreview.jsx
-│   │   │   │   ├── FAQ.jsx
-│   │   │   │   ├── Features.jsx
-│   │   │   │   ├── Hero.jsx
-│   │   │   │   ├── HorizontalFeatures.jsx
-│   │   │   │   ├── Integrations.jsx
-│   │   │   │   ├── PinnedShowcase.jsx
-│   │   │   │   ├── Pricing.jsx
-│   │   │   │   ├── ProductDemo.jsx
-│   │   │   │   ├── Testimonials.jsx
-│   │   │   │   ├── TrustLogos.jsx
-│   │   │   │   └── Workflow.jsx
-│   │   │   └── ui/                    # Reusable UI components
-│   │   │       ├── Badge.jsx
-│   │   │       ├── Button.jsx
-│   │   │       ├── Card.jsx
-│   │   │       ├── Input.jsx
-│   │   │       └── LoadingSpinner.jsx
-│   │   ├── contexts/                  # React contexts
-│   │   │   ├── AuthContext.jsx        # Authentication state
-│   │   │   └── ThemeContext.jsx       # Theme management
-│   │   ├── data/                      # Mock data and constants
-│   │   │   └── mockData.js            # Development data
-│   │   ├── hooks/                     # Custom React hooks
-│   │   │   ├── use3DScrollEffects.js  # 3D scroll animations
-│   │   │   ├── useAnimatedCounter.js  # Number animations
-│   │   │   ├── useAutoCloseSidebar.js # Smart sidebar logic
-│   │   │   ├── useDebounce.js         # Input debouncing
-│   │   │   ├── useGSAP.js            # GSAP integration
-│   │   │   └── useResponsive.js       # Responsive breakpoints
-│   │   ├── pages/                     # Page components
-│   │   │   ├── auth/                  # Authentication pages
-│   │   │   │   ├── LoginPage.jsx
-│   │   │   │   └── RegisterPage.jsx
-│   │   │   ├── Dashboard.jsx          # Main dashboard page
-│   │   │   ├── LandingPage.jsx        # Marketing landing page
-│   │   │   └── Projects.jsx           # Projects overview
-│   │   ├── services/                  # API services
-│   │   │   └── api.js                 # HTTP client and endpoints
-│   │   ├── stores/                    # State management
-│   │   │   ├── kanbanStore.js         # Kanban board state
-│   │   │   └── projectStore.js        # Project data state
-│   │   ├── utils/                     # Utility functions
-│   │   │   ├── cn.js                  # Class name utilities
-│   │   │   └── gsapOptimizations.js   # GSAP performance optimizations
-│   │   ├── App.jsx                    # Main application component
-│   │   ├── index.css                  # Global styles and Tailwind
-│   │   └── main.jsx                   # Application entry point
-│   ├── .eslintrc.cjs                  # ESLint configuration
-│   ├── .gitignore                     # Git ignore rules
-│   ├── index.html                     # HTML template
-│   ├── LICENSE                        # MIT license
-│   ├── package.json                   # Dependencies and scripts
-│   ├── postcss.config.js              # PostCSS configuration
-│   ├── tailwind.config.js             # Tailwind CSS configuration
-│   └── vite.config.js                 # Vite build configuration
-└── README.md                          # Project documentation
+stratify/
+├── backend/                 # Node.js backend
+│   ├── config/             # Database configuration
+│   ├── middleware/         # Auth, validation, error handling
+│   ├── models/            # MongoDB models
+│   ├── routes/            # API routes
+│   ├── scripts/           # Database seeding
+│   ├── utils/             # Helper functions
+│   └── server.js          # Main server file
+│
+├── frontend/               # React frontend
+│   ├── public/            # Static assets
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   ├── contexts/      # React contexts
+│   │   ├── hooks/         # Custom hooks
+│   │   ├── pages/         # Page components
+│   │   ├── services/      # API & Socket services
+│   │   ├── stores/        # State management
+│   │   └── utils/         # Helper functions
+│   └── package.json
+│
+└── README.md
 ```
 
-## 🚀 Quick Start
+## 🔧 Environment Variables
 
-### Prerequisites
-- **Node.js 18+** and npm/yarn/pnpm
-- **Modern browser** with WebGL support
-- **Git** for version control
-
-### Installation
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd Project-Management-System
-
-# Navigate to frontend
-cd frontend
-
-# Install dependencies (choose one)
-npm install
-# or
-yarn install
-# or
-pnpm install
-
-# Start development server
-npm run dev
-
-# Open browser
-# Navigate to http://localhost:5173
+### Backend (.env)
+```env
+PORT=5000
+NODE_ENV=development
+MONGODB_URI=mongodb://localhost:27017/stratify
+JWT_SECRET=your-jwt-secret
+JWT_EXPIRE=7d
+JWT_REFRESH_SECRET=your-refresh-secret
+JWT_REFRESH_EXPIRE=30d
+CLIENT_URL=http://localhost:5173
 ```
 
-### 📜 Available Scripts
+### Frontend (.env)
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_SOCKET_URL=http://localhost:5000
+```
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | 🚀 Start development server with HMR |
-| `npm run build` | 📦 Build optimized production bundle |
-| `npm run preview` | 👀 Preview production build locally |
-| `npm run lint` | 🔍 Run ESLint for code quality |
+## 🌐 API Endpoints
 
-### 🔧 Environment Setup
+### Authentication
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `POST /api/auth/refresh` - Refresh access token
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/forgot-password` - Request password reset
+- `PUT /api/auth/reset-password/:token` - Reset password
 
-Create a `.env` file in the frontend directory:
+### Users
+- `GET /api/users` - Get all users (Admin/Manager)
+- `GET /api/users/:id` - Get user by ID
+- `PUT /api/users/:id` - Update user profile
+- `PUT /api/users/:id/role` - Update user role (Admin)
+- `DELETE /api/users/:id` - Delete user (Admin)
+
+### Projects
+- `GET /api/projects` - Get user's projects
+- `POST /api/projects` - Create new project
+- `GET /api/projects/:id` - Get project details
+- `PUT /api/projects/:id` - Update project
+- `DELETE /api/projects/:id` - Delete project
+- `POST /api/projects/:id/team` - Add team member
+
+## 🔄 Real-time Events
+
+### Socket.IO Events
+- `user_online` - User comes online
+- `user_offline` - User goes offline
+- `project_created` - New project created
+- `project_updated` - Project updated
+- `project_deleted` - Project deleted
+- `team_member_added` - New team member added
+- `user_typing` - User typing indicator
+
+## 📧 Email System
+
+The application includes a comprehensive email system for user notifications with development-friendly features:
+
+### Development Mode (Default)
+- **Email Preview Files**: All emails are saved as HTML files in `backend/emails/` directory
+- **Browser Viewing**: Double-click any `.html` file to view the email in your browser
+- **Real-time Testing**: See exactly how emails look without needing SMTP credentials
+- **No Configuration Required**: Works out of the box for development
+
+### Production Mode
+Configure these environment variables in `backend/.env` for real email sending:
 
 ```env
-# API Configuration
-VITE_API_URL=http://localhost:3001
-VITE_APP_NAME=Project Management System
+# For Gmail (recommended)
+EMAIL_SERVICE=gmail
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASS=your-app-password  # Use App Password, not regular password
 
-# Feature Flags
-VITE_ENABLE_3D=true
-VITE_ENABLE_ANALYTICS=true
-
-# Performance Settings
-VITE_AUTO_CLOSE_DELAY=10
-VITE_ANIMATION_DURATION=300
+# For other SMTP providers
+EMAIL_HOST=smtp.your-provider.com
+EMAIL_PORT=587
+EMAIL_SECURE=false
+EMAIL_USER=your-email@provider.com
+EMAIL_PASS=your-password
 ```
 
-## 🎨 Key Features Deep Dive
+### Gmail Setup Instructions:
+1. Enable 2-factor authentication on your Google account
+2. Generate an App Password: Google Account → Security → App passwords
+3. Use the App Password in `EMAIL_PASS` (not your regular password)
 
-### 🧠 Smart Auto-Close Sidebar
-<details>
-<summary>Click to expand details</summary>
+### Email Types Included:
+- ✅ **Registration Confirmation**: Welcome email with account setup info
+- ✅ **Password Reset**: Secure password reset links with expiration
+- ✅ **Email Verification**: Account verification emails
+- ✅ **Welcome Messages**: Beautiful onboarding emails
 
-- **⚡ Lightning Fast**: 0.01-second response time to user activity
-- **🎯 Activity Detection**: Monitors mouse, keyboard, scroll, and touch events
-- **🛡️ Hover Protection**: Prevents closure when hovering over sidebar
-- **📱 Mobile Optimized**: Intelligently disabled on mobile devices
-- **👁️ Visual Feedback**: Optional countdown indicator for user awareness
-- **🔧 Customizable**: Adjustable timing and behavior settings
+### Testing Emails:
+```bash
+# Test all email templates
+cd backend
+npm run test-email
 
-```javascript
-// Example usage
-const { isOpen, shouldClose } = useAutoCloseSidebar({
-  delay: 10000, // 10 seconds
-  enableHoverProtection: true,
-  enableOnMobile: false
-})
-```
-</details>
-
-### 🌟 3D Interactive Background
-<details>
-<summary>Click to expand details</summary>
-
-- **🎮 WebGL Powered**: Hardware-accelerated 3D graphics using Three.js
-- **✨ Particle System**: Dynamic effects responding to user interactions
-- **⚡ Performance Optimized**: Automatic quality adjustment based on device
-- **📱 Responsive**: Adapts to different screen sizes and capabilities
-- **🎨 Customizable**: Configurable colors, density, and animation speed
-
-```javascript
-// 3D Background configuration
-<Background3D
-  particleCount={1000}
-  animationSpeed={0.5}
-  interactionRadius={100}
-  colors={['#4F46E5', '#7C3AED', '#EC4899']}
-/>
-```
-</details>
-
-### 📊 Advanced Dashboard
-<details>
-<summary>Click to expand details</summary>
-
-- **📈 Real-time Analytics**: Live project statistics and performance metrics
-- **📊 Interactive Charts**: Dynamic data visualization with smooth animations
-- **⌨️ Command Palette**: Quick actions accessible via ⌘K shortcut
-- **🔍 Global Search**: Instant search across projects, tasks, and team members
-- **🎛️ Smart Filters**: Advanced filtering with multiple criteria
-- **📱 Responsive Design**: Optimized for all screen sizes
-
-```javascript
-// Command Palette usage
-const commands = [
-  { id: 'new-project', label: 'Create New Project', shortcut: '⌘N' },
-  { id: 'search', label: 'Search Everything', shortcut: '⌘K' },
-  { id: 'settings', label: 'Open Settings', shortcut: '⌘,' }
-]
-```
-</details>
-
-### 📋 Kanban Board
-<details>
-<summary>Click to expand details</summary>
-
-- **🎯 Drag & Drop**: Smooth task movement between columns with @dnd-kit
-- **🔧 Custom Workflows**: Configurable board columns and statuses
-- **📊 Progress Tracking**: Visual progress indicators and completion rates
-- **👥 Team Collaboration**: Assignee management and task comments
-- **🏷️ Labels & Tags**: Organize tasks with custom labels and priorities
-
-```javascript
-// Kanban configuration
-const boardConfig = {
-  columns: ['To Do', 'In Progress', 'Review', 'Done'],
-  allowedTransitions: {
-    'To Do': ['In Progress'],
-    'In Progress': ['Review', 'To Do'],
-    'Review': ['Done', 'In Progress'],
-    'Done': []
-  }
-}
-```
-</details>
-
-## 🔧 Configuration & Customization
-
-### 🎨 Theme Configuration
-Customize the design system in `tailwind.config.js`:
-
-```javascript
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          50: '#eff6ff',
-          500: '#3b82f6',
-          900: '#1e3a8a',
-        },
-        // Add your custom colors
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out',
-        'slide-up': 'slideUp 0.3s ease-out',
-      }
-    }
-  }
-}
+# Check generated email files
+ls emails/
+# Open any .html file in your browser to preview
 ```
 
-### 🎭 Animation Settings
-Configure GSAP animations in `src/utils/gsapOptimizations.js`:
+## 🧪 Testing
 
-```javascript
-export const animationConfig = {
-  duration: 0.6,
-  ease: "power2.out",
-  stagger: 0.1,
-  scrollTrigger: {
-    start: "top 80%",
-    end: "bottom 20%",
-    toggleActions: "play none none reverse"
-  }
-}
+### Test Email System
+```bash
+cd backend
+npm run test-email
 ```
 
-### 🌟 3D Effects Configuration
-Customize Three.js settings in `src/components/3d/Background3D.jsx`:
-
-```javascript
-const config = {
-  particleCount: 1000,
-  particleSize: 2,
-  animationSpeed: 0.5,
-  mouseInfluence: 100,
-  colors: ['#4F46E5', '#7C3AED', '#EC4899']
-}
+### Test Authentication
+```bash
+cd backend
+npm run test-auth
 ```
 
-### 🧠 Sidebar Behavior
-Modify auto-close timing in `src/hooks/useAutoCloseSidebar.js`:
+## 🚀 Deployment
 
-```javascript
-const sidebarConfig = {
-  autoCloseDelay: 10000, // 10 seconds
-  hoverProtection: true,
-  enableOnMobile: false,
-  showCountdown: true
-}
-```
+### Backend Deployment
+1. Set production environment variables
+2. Use PM2 or similar process manager
+3. Configure reverse proxy (Nginx)
+4. Set up SSL certificate
 
-## 🌐 Browser Support & Performance
-
-### 📱 Supported Browsers
-| Browser | Version | Status |
-|---------|---------|--------|
-| ![Chrome](https://img.shields.io/badge/Chrome-90+-4285F4?style=flat-square&logo=google-chrome&logoColor=white) | 90+ | ✅ Fully Supported |
-| ![Firefox](https://img.shields.io/badge/Firefox-88+-FF7139?style=flat-square&logo=firefox&logoColor=white) | 88+ | ✅ Fully Supported |
-| ![Safari](https://img.shields.io/badge/Safari-14+-000000?style=flat-square&logo=safari&logoColor=white) | 14+ | ✅ Fully Supported |
-| ![Edge](https://img.shields.io/badge/Edge-90+-0078D4?style=flat-square&logo=microsoft-edge&logoColor=white) | 90+ | ✅ Fully Supported |
-| ![Mobile](https://img.shields.io/badge/Mobile-WebGL-00D4AA?style=flat-square&logo=android&logoColor=white) | WebGL | ✅ Optimized |
-
-### ⚡ Performance Features
-- **📦 Code Splitting**: Automatic route-based code splitting reduces initial bundle size
-- **🔄 Lazy Loading**: Components and images loaded on demand
-- **🗜️ Bundle Optimization**: Tree shaking and dead code elimination
-- **💾 Intelligent Caching**: Service worker caching for offline functionality
-- **🧹 Memory Management**: Automatic cleanup of animations and 3D resources
-- **📊 Performance Monitoring**: Built-in performance metrics and monitoring
-
-### 🔒 Security Features
-- **🛡️ Input Validation**: Comprehensive form validation with Zod schemas
-- **🚫 XSS Protection**: Sanitized user inputs and outputs
-- **🔐 CSRF Protection**: Built-in CSRF token handling
-- **🔒 Secure Headers**: Security headers for production deployment
-- **🔍 Content Security Policy**: Strict CSP for enhanced security
+### Frontend Deployment
+1. Build the project: `npm run build`
+2. Deploy to static hosting (Vercel, Netlify)
+3. Update API URLs for production
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### 🚀 Development Workflow
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and add tests
-4. Commit your changes: `git commit -m 'Add amazing feature'`
-5. Push to the branch: `git push origin feature/amazing-feature`
-6. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-### 📋 Code Standards
-- Follow ESLint configuration
-- Write meaningful commit messages
-- Add tests for new features
-- Update documentation as needed
+## 📝 License
 
-## 📄 License
+This project is licensed under the MIT License.
 
-This project is licensed under the MIT License - see the [LICENSE](frontend/LICENSE) file for details.
+## 🆘 Support
 
-## 🙏 Acknowledgments
+If you encounter any issues:
 
-<div align="center">
+1. Check the console for error messages
+2. Ensure MongoDB is running
+3. Verify environment variables are set correctly
+4. Check that all dependencies are installed
+5. Make sure ports 5000 and 5173 are available
 
-**Built with ❤️ using cutting-edge web technologies**
+## 🔮 Roadmap
 
-[![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![Three.js](https://img.shields.io/badge/Three.js-000000?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-
-</div>
-
-### Special Thanks
-- **React Team** - For the incredible React ecosystem
-- **Three.js Community** - For powerful 3D graphics capabilities  
-- **Tailwind CSS** - For the utility-first CSS approach
-- **GSAP** - For professional-grade animations
-- **Framer Motion** - For smooth React animations
-- **Open Source Community** - For the amazing ecosystem
+- [ ] Task Management System
+- [ ] File Upload & Attachments
+- [ ] Advanced Analytics Dashboard
+- [ ] Mobile App (React Native)
+- [ ] OAuth Integration (Google, GitHub)
+- [ ] Two-Factor Authentication
+- [ ] Email Notifications
+- [ ] Advanced Permissions System
+- [ ] API Rate Limiting
+- [ ] Audit Logging
 
 ---
 
-<div align="center">
-
-**⭐ Star this repo if you find it helpful!**
-
-*Copyright (c) 2026 Project Management System. All rights reserved.*
-
-</div>
+**Happy coding! 🚀**

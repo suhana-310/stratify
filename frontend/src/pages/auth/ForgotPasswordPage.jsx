@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -8,6 +8,7 @@ import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { toast } from 'react-hot-toast';
+import { authAPI } from '../../services/api';
 
 // Validation schema
 const forgotPasswordSchema = z.object({
@@ -34,13 +35,18 @@ const ForgotPasswordPage = () => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const response = await authAPI.forgotPassword(data.email);
       
-      setIsSubmitted(true);
-      toast.success('Password reset email sent!');
+      if (response.success) {
+        setIsSubmitted(true);
+        toast.success('Password reset email sent successfully!');
+      } else {
+        toast.error(response.message || 'Failed to send reset email');
+      }
     } catch (error) {
-      toast.error('Failed to send reset email. Please try again.');
+      console.error('Forgot password error:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to send reset email. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
