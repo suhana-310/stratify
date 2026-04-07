@@ -2,10 +2,10 @@
 
 ## Deployment Status: ✅ SUCCESSFUL
 
-### Frontend Deployment (Vercel)
-- **URL**: https://stratify-31.vercel.app
+### Frontend Deployment (Firebase)
+- **URL**: https://stratify31-app.web.app
 - **Status**: ✅ Live and Running
-- **Platform**: Vercel
+- **Platform**: Firebase Hosting
 - **Build**: Successful
 
 ### Backend Deployment (Railway)
@@ -26,7 +26,7 @@
 - ✅ NODE_ENV=production
 - ✅ MONGODB_URI (MongoDB Atlas connection)
 - ✅ JWT_SECRET & JWT_REFRESH_SECRET (production keys)
-- ✅ CLIENT_URL=https://stratify-31.vercel.app
+- ✅ CLIENT_URL=https://stratify31-app.web.app
 - ✅ EMAIL configuration (Gmail SMTP)
 - ✅ PORT=5000
 
@@ -65,7 +65,7 @@
 ## 🌐 Live URLs
 
 ### Production Application
-- **Frontend**: https://stratify-31.vercel.app
+- **Frontend**: https://stratify31-app.web.app
 - **Backend API**: https://stratify-production-57f5.up.railway.app/api
 - **Health Check**: https://stratify-production-57f5.up.railway.app/api/health
 
@@ -75,7 +75,7 @@
 
 ## 📋 Next Steps for Users
 
-1. **Access the Application**: Visit https://stratify-31.vercel.app
+1. **Access the Application**: Visit https://stratify31-app.web.app
 2. **Login/Register**: Use the authentication system
 3. **Create Projects**: Start managing your projects
 4. **Add Team Members**: Invite verified users to projects
