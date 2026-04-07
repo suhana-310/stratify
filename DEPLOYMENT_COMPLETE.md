@@ -62,7 +62,7 @@
 
 ### Test Credentials
 - **Email**: roshankumarsingh021@gmail.com
-- **Password**: password123
+- **Password**: Password123
 
 ## 📋 Next Steps for Users
 
