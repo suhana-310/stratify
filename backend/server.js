@@ -29,6 +29,9 @@ const io = new Server(server, {
       // Allow Vercel domains and localhost
       if (origin.includes('vercel.app') || 
           origin.includes('stratify-31.vercel.app') ||
+          origin.includes('firebaseapp.com') ||
+          origin.includes('web.app') ||
+          origin.includes('stratify-2026') ||
           origin === process.env.CLIENT_URL ||
           origin.includes('localhost')) {
         return callback(null, true);
@@ -67,6 +70,9 @@ app.use(cors({
     // Allow Vercel domains (including preview deployments)
     if (origin.includes('vercel.app') || 
         origin.includes('stratify-31.vercel.app') ||
+        origin.includes('firebaseapp.com') ||
+        origin.includes('web.app') ||
+        origin.includes('stratify-2026') ||
         origin === process.env.CLIENT_URL ||
         origin === 'http://localhost:5173' ||
         origin === 'http://localhost:5174') {
