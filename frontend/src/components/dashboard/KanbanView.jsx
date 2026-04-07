@@ -1,112 +1,226 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, X, Calendar, MessageCircle } from 'lucide-react'
+import { Plus, X, Calendar, MessageCircle, User, Clock, Flag, Edit3, Trash2, Tag, RefreshCw } from 'lucide-react'
+import { tasksAPI, projectsAPI } from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
+import { useRealtime } from '../../contexts/RealtimeContext'
+import socketService from '../../services/socket'
+import { toast } from 'react-hot-toast'
 
-export default function KanbanView() {
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      title: 'Design new landing page',
-      description: 'Create a modern responsive design',
-      assignee: { name: 'Sarah Johnson', avatar: 'https://randomuser.me/api/portraits/women/1.jpg', initials: 'SJ' },
-      priority: 'High',
-      status: 'todo',
-      progress: 0,
-      tags: ['Design', 'Frontend']
-    },
-    {
-      id: 2,
-      title: 'Setup CI/CD pipeline',
-      description: 'Configure automated deployment',
-      assignee: { name: 'Michael Chen', avatar: 'https://randomuser.me/api/portraits/men/2.jpg', initials: 'MC' },
-      priority: 'Medium',
-      status: 'todo',
-      progress: 0,
-      tags: ['DevOps']
-    },
-    {
-      id: 3,
-      title: 'Implement user authentication',
-      description: 'Add JWT-based authentication',
-      assignee: { name: 'Emily Rodriguez', avatar: 'https://randomuser.me/api/portraits/women/3.jpg', initials: 'ER' },
-      priority: 'High',
-      status: 'progress',
-      progress: 65,
-      tags: ['Backend', 'Security']
-    },
-    {
-      id: 4,
-      title: 'Create API documentation',
-      description: 'Document all REST API endpoints',
-      assignee: { name: 'David Kim', avatar: 'https://randomuser.me/api/portraits/men/4.jpg', initials: 'DK' },
-      priority: 'Low',
-      status: 'progress',
-      progress: 30,
-      tags: ['Documentation']
-    },
-    {
-      id: 5,
-      title: 'Code review for payment module',
-      description: 'Review and test payment system',
-      assignee: { name: 'Lisa Wang', avatar: 'https://randomuser.me/api/portraits/women/5.jpg', initials: 'LW' },
-      priority: 'High',
-      status: 'review',
-      progress: 90,
-      tags: ['Review', 'Payment']
-    },
-    {
-      id: 6,
-      title: 'Database schema optimization',
-      description: 'Optimize database performance',
-      assignee: { name: 'James Wilson', avatar: 'https://randomuser.me/api/portraits/men/6.jpg', initials: 'JW' },
-      priority: 'Medium',
-      status: 'done',
-      progress: 100,
-      tags: ['Database', 'Performance']
-    }
-  ])
+export default function KanbanView({ projectId }) {
+  const { user } = useAuth()
+  const { tasks, projects, loading, actions } = useRealtime()
+  const [showNewTaskModal, setShowNewTaskModal] = useState(false)
+  const [editingTask, setEditingTask] = useState(null)
   const [draggedTask, setDraggedTask] = useState(null)
-  const [showAddModal, setShowAddModal] = useState(false)
-  const [selectedColumn, setSelectedColumn] = useState('')
+  const [localLoading, setLocalLoading] = useState(false)
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    assignee: '',
+    priority: 'medium',
+    dueDate: '',
+    tags: [],
+    status: 'todo'
+  })
 
-  const teamMembers = [
-    { id: 1, name: 'Sarah Johnson', avatar: 'https://randomuser.me/api/portraits/women/1.jpg', initials: 'SJ' },
-    { id: 2, name: 'Michael Chen', avatar: 'https://randomuser.me/api/portraits/men/2.jpg', initials: 'MC' },
-    { id: 3, name: 'Emily Rodriguez', avatar: 'https://randomuser.me/api/portraits/women/3.jpg', initials: 'ER' },
-    { id: 4, name: 'David Kim', avatar: 'https://randomuser.me/api/portraits/men/4.jpg', initials: 'DK' }
-  ]
+  // Get current project from real-time context
+  const currentProject = projects.find(p => p._id === projectId)
+  
+  // Filter tasks for current project from real-time context
+  const projectTasks = tasks.filter(task => {
+    if (!task.project) return false
+    const taskProjectId = typeof task.project === 'object' ? task.project._id : task.project
+    return taskProjectId === projectId
+  })
+
+  // Get project team from current project
+  const projectTeam = currentProject?.team || []
+
+  console.log('🎯 Kanban Debug:', {
+    projectId,
+    currentProject: currentProject?.name,
+    totalTasks: tasks.length,
+    projectTasks: projectTasks.length,
+    projectTeam: projectTeam.length,
+    loading: loading.tasks
+  })
+
   const columns = [
-    { 
-      id: 'todo', 
-      title: 'TO-DO LIST', 
-      color: '#EF4444',
-      bgColor: '#FEF2F2',
-      borderColor: '#FECACA'
-    },
-    { 
-      id: 'progress', 
-      title: 'IN PROGRESS', 
-      color: '#3B82F6',
-      bgColor: '#EFF6FF',
-      borderColor: '#BFDBFE'
-    },
-    { 
-      id: 'review', 
-      title: 'IN REVIEW', 
-      color: '#F59E0B',
-      bgColor: '#FFFBEB',
-      borderColor: '#FDE68A'
-    },
-    { 
-      id: 'done', 
-      title: 'DONE', 
-      color: '#10B981',
-      bgColor: '#ECFDF5',
-      borderColor: '#A7F3D0'
-    }
+    { id: 'todo', title: 'To Do', color: 'bg-gray-100' },
+    { id: 'progress', title: 'In Progress', color: 'bg-blue-100' },
+    { id: 'review', title: 'Review', color: 'bg-yellow-100' },
+    { id: 'done', title: 'Done', color: 'bg-green-100' }
   ]
+
+  const priorityColors = {
+    low: 'bg-green-500',
+    medium: 'bg-yellow-500',
+    high: 'bg-orange-500',
+    urgent: 'bg-red-500'
+  }
+
+  // Load tasks and project data on component mount
+  useEffect(() => {
+    if (projectId && (!currentProject || projectTasks.length === 0)) {
+      console.log('🔄 Loading Kanban data for project:', projectId)
+      loadInitialData()
+    }
+  }, [projectId])
+
+  // Set up real-time listeners for this specific project
+  useEffect(() => {
+    if (!projectId || !socketService.isSocketConnected()) return
+
+    console.log('🎧 Setting up Kanban real-time listeners for project:', projectId)
+
+    const handleTaskCreated = (data) => {
+      const taskProjectId = typeof data.task.project === 'object' ? data.task.project._id : data.task.project
+      if (taskProjectId === projectId) {
+        console.log('📋 Task created for this project:', data.task.title)
+        toast.success(`New task "${data.task.title}" created`)
+      }
+    }
+
+    const handleTaskUpdated = (data) => {
+      const taskProjectId = typeof data.task.project === 'object' ? data.task.project._id : data.task.project
+      if (taskProjectId === projectId) {
+        console.log('📋 Task updated for this project:', data.task.title)
+      }
+    }
+
+    const handleTaskDeleted = (data) => {
+      console.log('📋 Task deleted:', data.taskId)
+      toast.info('Task deleted')
+    }
+
+    const handleTasksReordered = (data) => {
+      console.log('📋 Tasks reordered')
+    }
+
+    // Register listeners
+    socketService.on('task_created', handleTaskCreated)
+    socketService.on('task_updated', handleTaskUpdated)
+    socketService.on('task_deleted', handleTaskDeleted)
+    socketService.on('tasks_reordered', handleTasksReordered)
+
+    return () => {
+      socketService.off('task_created', handleTaskCreated)
+      socketService.off('task_updated', handleTaskUpdated)
+      socketService.off('task_deleted', handleTaskDeleted)
+      socketService.off('tasks_reordered', handleTasksReordered)
+    }
+  }, [projectId])
+
+  const loadInitialData = async () => {
+    try {
+      setLocalLoading(true)
+      console.log('🔄 Loading tasks for project:', projectId)
+      
+      // Load tasks for this project
+      const tasksResponse = await tasksAPI.getProjectTasks(projectId)
+      const newProjectTasks = tasksResponse.tasks || []
+      console.log('📋 Loaded tasks:', newProjectTasks.length)
+      
+      // Update tasks in real-time context (replace tasks for this project)
+      const otherTasks = tasks.filter(t => {
+        if (!t.project) return true
+        const taskProjectId = typeof t.project === 'object' ? t.project._id : t.project
+        return taskProjectId !== projectId
+      })
+      
+      const updatedTasks = [...otherTasks, ...newProjectTasks]
+      actions.setTasks(updatedTasks)
+      
+      // Load project details if not already in context
+      if (!currentProject) {
+        console.log('🔄 Loading project details:', projectId)
+        const projectResponse = await projectsAPI.getProjectById(projectId)
+        if (projectResponse.success && projectResponse.project) {
+          const updatedProjects = [...projects, projectResponse.project]
+          actions.setProjects(updatedProjects)
+        }
+      }
+    } catch (error) {
+      console.error('❌ Failed to load kanban data:', error)
+      toast.error('Failed to load kanban data')
+    } finally {
+      setLocalLoading(false)
+    }
+  }
+
+  // Get tasks by status from real-time context
+  const getTasksByStatus = (status) => {
+    return projectTasks.filter(task => task.status === status)
+      .sort((a, b) => (a.position || 0) - (b.position || 0))
+  }
+
+  const handleCreateTask = async (e) => {
+    e.preventDefault()
+    
+    if (!newTask.title.trim()) {
+      toast.error('Task title is required')
+      return
+    }
+
+    try {
+      console.log('📋 Creating task:', newTask.title)
+      const taskData = {
+        ...newTask,
+        project: projectId,
+        tags: newTask.tags.filter(tag => tag.trim() !== '')
+      }
+
+      const response = await tasksAPI.createTask(taskData)
+      console.log('✅ Task created:', response)
+      
+      // Task will be added via real-time context
+      setShowNewTaskModal(false)
+      setNewTask({
+        title: '',
+        description: '',
+        assignee: '',
+        priority: 'medium',
+        dueDate: '',
+        tags: [],
+        status: 'todo'
+      })
+      
+      toast.success('Task created successfully!')
+    } catch (error) {
+      console.error('❌ Failed to create task:', error)
+      toast.error('Failed to create task')
+    }
+  }
+
+  const handleUpdateTask = async (taskId, updates) => {
+    try {
+      console.log('📋 Updating task:', taskId, updates)
+      const response = await tasksAPI.updateTask(taskId, updates)
+      console.log('✅ Task updated:', response)
+      // Task will be updated via real-time context
+    } catch (error) {
+      console.error('❌ Failed to update task:', error)
+      toast.error('Failed to update task')
+    }
+  }
+
+  const handleDeleteTask = async (taskId) => {
+    if (!confirm('Are you sure you want to delete this task?')) return
+
+    try {
+      console.log('📋 Deleting task:', taskId)
+      await tasksAPI.deleteTask(taskId)
+      console.log('✅ Task deleted')
+      // Task will be removed via real-time context
+    } catch (error) {
+      console.error('❌ Failed to delete task:', error)
+      toast.error('Failed to delete task')
+    }
+  }
 
   const handleDragStart = (e, task) => {
+    console.log('🎯 Drag start:', task.title)
     setDraggedTask(task)
     e.dataTransfer.effectAllowed = 'move'
   }
@@ -116,368 +230,475 @@ export default function KanbanView() {
     e.dataTransfer.dropEffect = 'move'
   }
 
-  const handleDrop = (e, newStatus) => {
+  const handleDrop = async (e, newStatus) => {
     e.preventDefault()
-    if (draggedTask) {
-      setTasks(prevTasks =>
-        prevTasks.map(task =>
-          task.id === draggedTask.id
-            ? { 
-                ...task, 
-                status: newStatus,
-                progress: newStatus === 'done' ? 100 : task.progress
-              }
-            : task
-        )
-      )
+    
+    if (!draggedTask || draggedTask.status === newStatus) {
       setDraggedTask(null)
+      return
     }
-  }
-  
-  const updateTaskProgress = (taskId, newProgress) => {
-    setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId
-          ? { 
-              ...task, 
-              progress: newProgress,
-              status: newProgress === 100 ? 'done' : task.status
-            }
-          : task
+
+    console.log('🎯 Dropping task:', draggedTask.title, 'to status:', newStatus)
+
+    try {
+      // Update task status immediately for optimistic UI
+      const optimisticUpdate = { ...draggedTask, status: newStatus }
+      const updatedTasks = tasks.map(t => 
+        t._id === draggedTask._id ? optimisticUpdate : t
       )
+      actions.setTasks(updatedTasks)
+
+      // Update task status on server
+      await handleUpdateTask(draggedTask._id, { status: newStatus })
+      
+      // Update positions for all tasks in the new column
+      const tasksInColumn = projectTasks.filter(t => t.status === newStatus)
+      const bulkUpdates = tasksInColumn.map((task, index) => ({
+        id: task._id,
+        position: index,
+        status: newStatus
+      }))
+
+      if (bulkUpdates.length > 0) {
+        console.log('📋 Updating task positions:', bulkUpdates.length)
+        await tasksAPI.bulkUpdatePositions(bulkUpdates)
+      }
+
+      toast.success(`Task moved to ${newStatus}`)
+    } catch (error) {
+      console.error('❌ Failed to move task:', error)
+      toast.error('Failed to move task')
+      // Revert optimistic update on error
+      loadInitialData()
+    }
+
+    setDraggedTask(null)
+  }
+
+  const formatDate = (date) => {
+    if (!date) return ''
+    return new Date(date).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  const isOverdue = (dueDate) => {
+    if (!dueDate) return false
+    return new Date(dueDate) < new Date() && new Date(dueDate).toDateString() !== new Date().toDateString()
+  }
+
+  if (loading.tasks || localLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          <p className="text-gray-600">Loading Kanban board...</p>
+        </div>
+      </div>
     )
   }
 
-  const getPriorityColor = (priority) => {
-    switch(priority) {
-      case 'High': return 'bg-red-500 text-white'
-      case 'Medium': return 'bg-yellow-500 text-white'
-      case 'Low': return 'bg-green-500 text-white'
-      default: return 'bg-gray-500 text-white'
-    }
+  if (!projectId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-600">Please select a project to view the Kanban board</p>
+        </div>
+      </div>
+    )
   }
 
-  const getTasksByStatus = (status) => tasks.filter(task => task.status === status)
-
-  const calculateOverallProgress = () => {
-    const totalProgress = tasks.reduce((sum, task) => sum + task.progress, 0)
-    return Math.round(totalProgress / tasks.length)
+  if (!currentProject) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <p className="text-gray-600">Project not found</p>
+          <button 
+            onClick={loadInitialData}
+            className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="w-full h-full">
-      <div className="max-w-full mx-auto h-full">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 text-center mb-2">Task Overview</h1>
-        </div>
-
-        {/* Top Section - Team and Statistics */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          
-          {/* Team Section */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-bold text-gray-800 mb-2">TEAM</h2>
-            <h3 className="text-sm font-semibold text-gray-600 mb-4">IN-CHARGE</h3>
-            
-            <div className="grid grid-cols-3 gap-3">
-              {teamMembers.map((member, index) => (
-                <motion.div
-                  key={member.id}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  className="relative group"
-                >
-                  <div className="w-16 h-16 rounded-full overflow-hidden bg-teal-600 flex items-center justify-center text-white font-semibold text-lg shadow-lg">
-                    {member.initials}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-
-          {/* Task Statistics */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <div className="space-y-4">
-              {columns.map((column) => {
-                const columnTasks = getTasksByStatus(column.id)
-                const totalTasks = tasks.length
-                const percentage = totalTasks > 0 ? Math.round((columnTasks.length / totalTasks) * 100) : 0
-                
-                return (
-                  <div key={column.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: column.color }}
-                      ></div>
-                      <span className="text-sm font-medium text-gray-700">{column.title}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg font-bold text-gray-900">{columnTasks.length}</span>
-                      <span className="text-sm text-gray-500">{percentage}%</span>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Overall Progress Circle */}
-          <div className="bg-white rounded-2xl p-6 shadow-sm flex flex-col items-center justify-center">
-            <h3 className="text-sm font-semibold text-gray-600 mb-4">Overall Progress</h3>
-            <div className="relative w-24 h-24">
-              <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="#E5E7EB"
-                  strokeWidth="8"
-                  fill="none"
-                />
-                <motion.circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="#10B981"
-                  strokeWidth="8"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeDasharray={`${2 * Math.PI * 40}`}
-                  initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
-                  animate={{ 
-                    strokeDashoffset: 2 * Math.PI * 40 * (1 - calculateOverallProgress() / 100)
-                  }}
-                  transition={{ duration: 1, delay: 0.5 }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-2xl font-bold text-gray-900">{calculateOverallProgress()}%</span>
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Kanban Board</h2>
+          <div className="flex items-center gap-4 mt-1">
+            <p className="text-sm text-gray-600">
+              Project: {currentProject?.name || 'Loading...'}
+            </p>
+            <p className="text-sm text-gray-600">
+              Tasks: {projectTasks.length}
+            </p>
+            <p className="text-sm text-gray-600">
+              Team: {projectTeam.length} members
+            </p>
+            {loading.tasks && (
+              <div className="flex items-center gap-1 text-blue-600">
+                <div className="w-3 h-3 border border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-xs">Syncing...</span>
               </div>
-            </div>
+            )}
           </div>
         </div>
-        {/* Kanban Board */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-teal-700 rounded-3xl p-6 shadow-xl"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {columns.map((column, index) => (
-              <motion.div
-                key={column.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="flex flex-col h-full"
-                onDragOver={handleDragOver}
-                onDrop={(e) => handleDrop(e, column.id)}
-              >
-                {/* Column Header */}
-                <div 
-                  className="rounded-lg px-4 py-3 mb-4 border-2 flex items-center justify-between"
-                  style={{ 
-                    backgroundColor: column.bgColor,
-                    borderColor: column.borderColor
-                  }}
-                >
-                  <h3 className="text-xs font-bold text-gray-700 flex-1 text-center tracking-wide">
-                    {column.title}
-                  </h3>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs bg-white text-gray-700 px-2 py-1 rounded-full font-bold min-w-[24px] text-center">
-                      {getTasksByStatus(column.id).length}
-                    </span>
-                    <button
-                      onClick={() => {
-                        setSelectedColumn(column.id)
-                        setShowAddModal(true)
-                      }}
-                      className="text-gray-600 hover:text-gray-800 transition-colors p-1 hover:bg-white/50 rounded"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-                
-                {/* Tasks Container */}
-                <div className="flex-1 space-y-3 min-h-[400px]">
-                  <AnimatePresence>
-                    {getTasksByStatus(column.id).map((task) => (
-                      <motion.div
-                        key={task.id}
-                        layout
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ duration: 0.2 }}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, task)}
-                        className="bg-white rounded-xl p-4 shadow-sm cursor-move hover:shadow-md transition-all duration-200 group"
-                      >
-                        {/* Task Header */}
-                        <div className="flex items-start justify-between mb-3">
-                          <h4 className="text-sm font-bold text-gray-900 leading-tight flex-1 pr-2">
-                            {task.title}
-                          </h4>
-                          <span className={`text-xs px-2 py-1 rounded-full font-bold flex-shrink-0 ${getPriorityColor(task.priority)}`}>
-                            {task.priority}
-                          </span>
-                        </div>
-
-                        {/* Task Description */}
-                        <p className="text-xs text-gray-600 mb-4 leading-relaxed">
-                          {task.description}
-                        </p>
-
-                        {/* Progress Section */}
-                        <div className="mb-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-gray-500 font-medium">Progress</span>
-                            <span className="text-xs font-bold text-gray-700">{task.progress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <motion.div
-                              className="h-2 rounded-full"
-                              style={{ 
-                                backgroundColor: task.progress === 100 
-                                  ? '#10B981' 
-                                  : task.progress >= 50 
-                                    ? '#3B82F6' 
-                                    : '#F59E0B'
-                              }}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${task.progress}%` }}
-                              transition={{ duration: 0.5 }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-1.5 mb-4">
-                          {task.tags.map((tag, tagIndex) => (
-                            <span
-                              key={tagIndex}
-                              className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-
-                        {/* Task Footer */}
-                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                          <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-semibold">
-                              {task.assignee.initials}
-                            </div>
-                            <span className="text-xs text-gray-600 font-medium">{task.assignee.initials}</span>
-                          </div>
-                          
-                          <div className="flex items-center gap-3 text-xs text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <MessageCircle className="w-3 h-3" />
-                              <span>2</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-3 h-3" />
-                              <span>Mar 25</span>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={loadInitialData}
+            disabled={localLoading}
+            className="flex items-center gap-2 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+            title="Refresh tasks"
+          >
+            <RefreshCw className={`w-4 h-4 ${localLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <button
+            onClick={() => setShowNewTaskModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Task
+          </button>
+        </div>
       </div>
-      
-      {/* Add Task Modal */}
+
+      {/* Kanban Board */}
+      <div className="flex-1 grid grid-cols-4 gap-6 overflow-hidden">
+        {columns.map((column) => (
+          <div
+            key={column.id}
+            className={`${column.color} rounded-lg p-4 flex flex-col`}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, column.id)}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-800">{column.title}</h3>
+              <span className="bg-white px-2 py-1 rounded-full text-sm font-medium text-gray-600">
+                {getTasksByStatus(column.id).length}
+              </span>
+            </div>
+
+            <div className="flex-1 space-y-3 overflow-y-auto">
+              <AnimatePresence>
+                {getTasksByStatus(column.id).map((task) => (
+                  <motion.div
+                    key={task._id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, task)}
+                    className="bg-white rounded-lg p-4 shadow-sm border border-gray-200 cursor-move hover:shadow-md transition-shadow"
+                  >
+                    {/* Task Header */}
+                    <div className="flex items-start justify-between mb-2">
+                      <h4 className="font-medium text-gray-900 text-sm leading-tight">
+                        {task.title}
+                      </h4>
+                      <div className="flex items-center gap-1 ml-2">
+                        <button
+                          onClick={() => setEditingTask(task)}
+                          className="p-1 text-gray-400 hover:text-gray-600 rounded"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTask(task._id)}
+                          className="p-1 text-gray-400 hover:text-red-600 rounded"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Task Description */}
+                    {task.description && (
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                        {task.description}
+                      </p>
+                    )}
+
+                    {/* Tags */}
+                    {task.tags && task.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-3">
+                        {task.tags.slice(0, 2).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                          >
+                            <Tag className="w-2 h-2" />
+                            {tag}
+                          </span>
+                        ))}
+                        {task.tags.length > 2 && (
+                          <span className="text-xs text-gray-500">
+                            +{task.tags.length - 2} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Progress Bar */}
+                    {task.progress > 0 && (
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-gray-600">Progress</span>
+                          <span className="text-xs text-gray-600">{task.progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-1.5">
+                          <div
+                            className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                            style={{ width: `${task.progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Task Footer */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {/* Priority */}
+                        <div className={`w-2 h-2 rounded-full ${priorityColors[task.priority]}`}></div>
+                        
+                        {/* Due Date */}
+                        {task.dueDate && (
+                          <div className={`flex items-center gap-1 text-xs ${
+                            isOverdue(task.dueDate) ? 'text-red-600' : 'text-gray-500'
+                          }`}>
+                            <Calendar className="w-3 h-3" />
+                            {formatDate(task.dueDate)}
+                          </div>
+                        )}
+
+                        {/* Comments */}
+                        {task.comments && task.comments.length > 0 && (
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <MessageCircle className="w-3 h-3" />
+                            {task.comments.length}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Assignee */}
+                      {task.assignee && (
+                        <div className="flex items-center" title={
+                          typeof task.assignee === 'object' 
+                            ? task.assignee.name 
+                            : projectTeam.find(m => m.user._id === task.assignee)?.user.name || 'Unknown'
+                        }>
+                          {typeof task.assignee === 'object' ? (
+                            // Assignee is populated object
+                            task.assignee.avatar ? (
+                              <img
+                                src={task.assignee.avatar}
+                                alt={task.assignee.name}
+                                className="w-6 h-6 rounded-full"
+                              />
+                            ) : (
+                              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                {task.assignee.name?.charAt(0) || 'U'}
+                              </div>
+                            )
+                          ) : (
+                            // Assignee is just an ID, find in project team
+                            (() => {
+                              const teamMember = projectTeam.find(m => m.user._id === task.assignee)
+                              return teamMember ? (
+                                teamMember.user.avatar ? (
+                                  <img
+                                    src={teamMember.user.avatar}
+                                    alt={teamMember.user.name}
+                                    className="w-6 h-6 rounded-full"
+                                  />
+                                ) : (
+                                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                    {teamMember.user.name?.charAt(0) || 'U'}
+                                  </div>
+                                )
+                              ) : (
+                                <div className="w-6 h-6 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs font-medium">
+                                  ?
+                                </div>
+                              )
+                            })()
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+              
+              {/* Empty State */}
+              {getTasksByStatus(column.id).length === 0 && (
+                <div className="text-center py-8 text-gray-400">
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Plus className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm">No tasks in {column.title.toLowerCase()}</p>
+                  {column.id === 'todo' && (
+                    <button
+                      onClick={() => setShowNewTaskModal(true)}
+                      className="text-blue-600 hover:text-blue-700 text-sm mt-1"
+                    >
+                      Add your first task
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* New Task Modal */}
       <AnimatePresence>
-        {showAddModal && (
+        {showNewTaskModal && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            onClick={() => setShowAddModal(false)}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => setShowNewTaskModal(false)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-lg p-6 w-full max-w-md mx-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-800">Add New Task</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Create New Task</h3>
                 <button
-                  onClick={() => setShowAddModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+                  onClick={() => setShowNewTaskModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <div className="space-y-4">
+              <form onSubmit={handleCreateTask} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Task Title</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Title *
+                  </label>
                   <input
                     type="text"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter task title..."
+                    value={newTask.title}
+                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter task title"
+                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Description
+                  </label>
                   <textarea
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    value={newTask.description}
+                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="3"
-                    placeholder="Enter task description..."
+                    placeholder="Enter task description"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Assign To
+                  </label>
+                  <select
+                    value={newTask.assignee}
+                    onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Unassigned</option>
+                    {projectTeam.map((member) => (
+                      <option key={member.user._id} value={member.user._id}>
+                        {member.user.name} ({member.role})
+                      </option>
+                    ))}
+                  </select>
+                  {projectTeam.length === 0 && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      No team members available. Add members to the project first.
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
-                    <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                      <option value="Low">Low</option>
-                      <option value="Medium">Medium</option>
-                      <option value="High">High</option>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Priority
+                    </label>
+                    <select
+                      value={newTask.priority}
+                      onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                      <option value="urgent">Urgent</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Assignee</label>
-                    <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
-                      <option value="">Select assignee</option>
-                      {teamMembers.map(member => (
-                        <option key={member.id} value={member.name}>{member.name}</option>
-                      ))}
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select
+                      value={newTask.status}
+                      onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="todo">To Do</option>
+                      <option value="progress">In Progress</option>
+                      <option value="review">Review</option>
+                      <option value="done">Done</option>
                     </select>
                   </div>
                 </div>
 
-                <div className="flex gap-3 pt-4">
-                  <button className="flex-1 bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium shadow-lg">
-                    Add Task
-                  </button>
-                  <button 
-                    onClick={() => setShowAddModal(false)}
-                    className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Due Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newTask.dueDate}
+                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowNewTaskModal(false)}
+                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                   >
                     Cancel
                   </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Create Task
+                  </button>
                 </div>
-              </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

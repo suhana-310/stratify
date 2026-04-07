@@ -10,8 +10,8 @@ router.use(protect);
 
 // @desc    Get all users
 // @route   GET /api/users
-// @access  Private (Admin/Manager)
-router.get('/', authorize('admin', 'manager'), async (req, res) => {
+// @access  Private (All authenticated users can see basic info)
+router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 10, search, role, status, department } = req.query;
 
@@ -29,19 +29,37 @@ router.get('/', authorize('admin', 'manager'), async (req, res) => {
     if (status) query.status = status;
     if (department) query.department = { $regex: department, $options: 'i' };
 
+    // Different access levels based on user role
+    let selectFields = 'name email avatar status role department';
+    let populateProjects = false;
+    
+    if (req.user.role === 'admin' || req.user.role === 'manager') {
+      // Admin and managers can see more details
+      selectFields = '-password -refreshTokens';
+      populateProjects = true;
+    }
+
     // Execute query with pagination
-    const users = await User.find(query)
-      .select('-password -refreshTokens')
-      .populate('projects', 'name status')
+    let userQuery = User.find(query)
+      .select(selectFields)
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
+    
+    if (populateProjects) {
+      userQuery = userQuery.populate('projects', 'name status');
+    }
+    
+    const users = await userQuery;
 
     const total = await User.countDocuments(query);
 
     res.json({
       success: true,
-      users: users.map(user => user.profile),
+      users: users.map(user => ({
+        _id: user._id,
+        ...user.profile
+      })),
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),

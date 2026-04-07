@@ -10,11 +10,14 @@ import AnalyticsView from '../components/dashboard/AnalyticsView'
 import TeamView from '../components/dashboard/TeamView'
 import SettingsView from '../components/dashboard/SettingsView'
 import AutoCloseIndicator from '../components/dashboard/AutoCloseIndicator'
+import RealtimeDebug from '../components/debug/RealtimeDebug'
+import RealtimeTest from '../components/test/RealtimeTest'
 import { useResponsive } from '../hooks/useResponsive'
 import { useAutoCloseSidebar } from '../hooks/useAutoCloseSidebar'
 
 export default function Dashboard() {
   const [activeView, setActiveView] = useState('dashboard')
+  const [selectedProjectId, setSelectedProjectId] = useState(null)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const { isMobile } = useResponsive()
 
@@ -29,11 +32,17 @@ export default function Dashboard() {
   const renderView = () => {
     switch (activeView) {
       case 'dashboard':
-        return <DashboardOverview />
+        return <DashboardOverview onProjectSelect={(projectId) => {
+          setSelectedProjectId(projectId)
+          setActiveView('kanban')
+        }} />
       case 'projects':
-        return <ProjectsView />
+        return <ProjectsView onProjectSelect={(projectId) => {
+          setSelectedProjectId(projectId)
+          setActiveView('kanban')
+        }} />
       case 'kanban':
-        return <KanbanView />
+        return <KanbanView projectId={selectedProjectId} />
       case 'calendar':
         return <CalendarView />
       case 'analytics':
@@ -42,6 +51,8 @@ export default function Dashboard() {
         return <TeamView />
       case 'settings':
         return <SettingsView />
+      case 'realtime-test':
+        return <RealtimeTest />
       default:
         return <DashboardOverview />
     }
@@ -91,6 +102,9 @@ export default function Dashboard() {
         isVisible={showCountdown && sidebarOpen && !isMobile}
         timeRemaining={timeRemaining}
       />
+
+      {/* Real-time Debug Panel */}
+      <RealtimeDebug />
     </div>
   )
 }

@@ -14,6 +14,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
+import { RealtimeProvider } from './contexts/RealtimeContext'
 import Background3D from './components/3d/Background3D'
 import ErrorBoundary from './components/error/ErrorBoundary'
 import AuthErrorBoundary from './components/auth/AuthErrorBoundary'
@@ -70,12 +71,13 @@ function App() {
     <ThemeProvider>
       <AuthErrorBoundary>
         <AuthProvider>
-          <Router
-            future={{
-              v7_startTransition: true,
-              v7_relativeSplatPath: true
-            }}
-          >
+          <RealtimeProvider>
+            <Router
+              future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+              }}
+            >
             {/* CRITICAL: Global 3D Background - Fixed behind everything */}
             <ErrorBoundary 
               fallback={
@@ -159,9 +161,10 @@ function App() {
               />
             </div>
           </Router>
-        </AuthProvider>
-      </AuthErrorBoundary>
-    </ThemeProvider>
+        </RealtimeProvider>
+      </AuthProvider>
+    </AuthErrorBoundary>
+  </ThemeProvider>
   )
 }
 

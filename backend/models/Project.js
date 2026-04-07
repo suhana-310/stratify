@@ -53,6 +53,10 @@ const projectSchema = new mongoose.Schema({
     ref: 'User',
     required: [true, 'Project owner is required']
   },
+  tasks: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Task'
+  }],
   team: [{
     user: {
       type: mongoose.Schema.ObjectId,
@@ -93,6 +97,35 @@ const projectSchema = new mongoose.Schema({
   tasks: [{
     type: mongoose.Schema.ObjectId,
     ref: 'Task'
+  }],
+  links: [{
+    title: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    url: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    description: {
+      type: String,
+      trim: true
+    },
+    type: {
+      type: String,
+      enum: ['repository', 'deployment', 'documentation', 'design', 'other'],
+      default: 'other'
+    },
+    addedBy: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'User'
+    },
+    addedAt: {
+      type: Date,
+      default: Date.now
+    }
   }],
   attachments: [{
     name: String,
@@ -249,6 +282,33 @@ projectSchema.methods.updateTeamMemberRole = function(userId, newRole, newPermis
   member.role = newRole;
   member.permissions = { ...member.permissions, ...newPermissions };
   
+  return this.save();
+};
+
+// Method to add project link
+projectSchema.methods.addLink = function(linkData, userId) {
+  this.links.push({
+    ...linkData,
+    addedBy: userId,
+    addedAt: new Date()
+  });
+  return this.save();
+};
+
+// Method to update project link
+projectSchema.methods.updateLink = function(linkId, linkData) {
+  const link = this.links.id(linkId);
+  if (!link) {
+    throw new Error('Link not found');
+  }
+  
+  Object.assign(link, linkData);
+  return this.save();
+};
+
+// Method to remove project link
+projectSchema.methods.removeLink = function(linkId) {
+  this.links.pull(linkId);
   return this.save();
 };
 

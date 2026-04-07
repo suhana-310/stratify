@@ -1,337 +1,238 @@
-# Stratify - Real-time Project Management System
+# Stratify - Real-time Project Management Platform
 
-A modern, full-stack project management system with real-time collaboration features, built with React, Node.js, MongoDB, and Socket.IO.
+A modern, real-time project management platform built with React, Node.js, and Socket.IO for seamless team collaboration.
 
-## 🚀 Features
+## ✨ Features
 
-### Authentication & Security
-- ✅ **Real-time Authentication** - JWT-based auth with refresh tokens
-- ✅ **User Registration & Login** - Complete signup/signin flow
-- ✅ **Email Confirmation** - Welcome email sent upon successful registration
-- ✅ **Password Reset** - Email-based password recovery
-- ✅ **Role-based Access Control** - Admin, Manager, Member roles
-- ✅ **Session Management** - Secure token handling
-- ✅ **Route Protection** - Dashboard only accessible after authentication
-- 🔄 **Social Login** - Google & GitHub OAuth (coming soon)
+### 🚀 Real-time Collaboration
+- **Live Updates**: All changes sync instantly across all connected users
+- **Socket.IO Integration**: Robust real-time communication with automatic reconnection
+- **Cross-Component Sync**: Projects, tasks, and team updates reflect everywhere immediately
 
-### Real-time Collaboration
-- ✅ **Live Updates** - Real-time project and user updates
-- ✅ **Online Status** - See who's online/offline
-- ✅ **Typing Indicators** - Real-time typing status
-- ✅ **Instant Notifications** - Toast notifications for all events
-- ✅ **Project Invitations** - Real-time team invitations
+### 📊 Project Management
+- **Project Creation & Management**: Create, update, and organize projects with timelines
+- **Team Management**: Add/remove team members with role-based permissions
+- **Project Links**: Manage project-related links and resources
+- **Status Tracking**: Monitor project progress with live status updates
 
-### Project Management
-- ✅ **Project Creation** - Create and manage projects
-- ✅ **Team Management** - Add/remove team members
-- ✅ **Role Permissions** - Granular permission system
-- ✅ **Project Dashboard** - Overview and analytics
-- ✅ **Activity Logging** - Track all project activities
+### 📋 Kanban Board
+- **Drag & Drop**: Smooth task management with real-time position updates
+- **Multiple Columns**: Todo, In Progress, Review, Done
+- **Task Details**: Comprehensive task information with priorities, due dates, and assignments
+- **Live Updates**: See task changes instantly without page refresh
 
-### Modern UI/UX
-- ✅ **3D Animations** - Three.js powered backgrounds
-- ✅ **Smooth Scrolling** - GSAP animations
-- ✅ **Responsive Design** - Mobile-first approach
-- ✅ **Dark/Light Theme** - Theme switching
-- ✅ **Loading States** - Skeleton screens and spinners
+### 👥 Team Collaboration
+- **User Management**: Comprehensive user profiles and authentication
+- **Role-based Access**: Owner, Manager, Developer, Designer, Viewer roles
+- **Team Activities**: Live activity feed showing team actions
+- **Real-time Notifications**: Instant updates for task assignments and project changes
 
-## 🛠️ Tech Stack
+### 📈 Dashboard Analytics
+- **Live Statistics**: Real-time project and task metrics
+- **Activity Overview**: Recent activities and project summaries
+- **Team Insights**: Team member statistics and project distribution
+
+## 🛠️ Technology Stack
 
 ### Frontend
-- **React 18** - Modern React with hooks
-- **Vite** - Fast build tool
-- **Tailwind CSS** - Utility-first styling
-- **Framer Motion** - Smooth animations
-- **Three.js** - 3D graphics
-- **GSAP** - Advanced animations
-- **Socket.IO Client** - Real-time communication
-- **React Hook Form** - Form handling
-- **Zod** - Schema validation
+- **React 18** with Hooks and Context API
+- **Vite** for fast development and building
+- **Tailwind CSS** for modern, responsive styling
+- **Framer Motion** for smooth animations
+- **Socket.IO Client** for real-time communication
+- **React Hot Toast** for user notifications
 
 ### Backend
-- **Node.js** - JavaScript runtime
-- **Express.js** - Web framework
-- **MongoDB** - NoSQL database
-- **Mongoose** - MongoDB ODM
-- **Socket.IO** - Real-time engine
-- **JWT** - Authentication tokens
-- **bcryptjs** - Password hashing
-- **Nodemailer** - Email service
+- **Node.js** with Express.js framework
+- **MongoDB** with Mongoose ODM
+- **Socket.IO** for real-time bidirectional communication
+- **JWT Authentication** with secure token management
+- **bcryptjs** for password hashing
+- **Helmet** for security headers
 
-## 📦 Installation & Setup
+### Real-time Features
+- **Socket.IO** for instant data synchronization
+- **Event-driven Architecture** for scalable real-time updates
+- **Automatic Reconnection** with connection resilience
+- **Room-based Broadcasting** for efficient data distribution
+
+## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
-- MongoDB (local or Atlas)
-- Git
+- Node.js (v16 or higher)
+- MongoDB (local or cloud instance)
+- npm or yarn package manager
 
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd stratify
-```
+### Installation
 
-### 2. Backend Setup
-```bash
-cd backend
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd stratify
+   ```
 
-# Install dependencies
-npm install
+2. **Backend Setup**
+   ```bash
+   cd backend
+   npm install
+   
+   # Copy environment file and configure
+   cp .env.example .env
+   # Edit .env with your MongoDB URI and JWT secret
+   
+   # Start the backend server
+   npm start
+   ```
 
-# Copy environment file
-cp .env.example .env
+3. **Frontend Setup**
+   ```bash
+   cd frontend
+   npm install
+   
+   # Copy environment file and configure
+   cp .env.example .env
+   # Edit .env with your backend API URL
+   
+   # Start the frontend development server
+   npm run dev
+   ```
 
-# Edit .env with your configuration
-# - Set MongoDB URI
-# - Set JWT secrets
-# - Configure email settings (optional for development)
+4. **Access the Application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000
 
-# Test email system (optional)
-npm run test-email
+### Environment Configuration
 
-# Seed the database with sample data
-npm run seed
-
-# Start the backend server
-npm run dev
-```
-
-The backend will run on `http://localhost:5000`
-
-### 3. Frontend Setup
-```bash
-cd ../frontend
-
-# Install dependencies
-npm install
-
-# Copy environment file
-cp .env.example .env
-
-# Edit .env if needed (API URL should match backend)
-
-# Start the frontend development server
-npm run dev
-```
-
-The frontend will run on `http://localhost:5173`
-
-## 🔐 Default Login Credentials
-
-After running the seed script, you can login with these accounts:
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@company.com | admin123 |
-| Manager | sarah@company.com | password123 |
-| Member | mike@company.com | password123 |
-| Member | emily@company.com | password123 |
-| Member | alex@company.com | password123 |
-
-## 🚀 Quick Start
-
-1. **Start MongoDB** (if running locally)
-2. **Start Backend**: `cd backend && npm run dev`
-3. **Start Frontend**: `cd frontend && npm run dev`
-4. **Open Browser**: Navigate to `http://localhost:5173`
-5. **Login**: Use any of the default credentials above
-
-## 📁 Project Structure
-
-```
-stratify/
-├── backend/                 # Node.js backend
-│   ├── config/             # Database configuration
-│   ├── middleware/         # Auth, validation, error handling
-│   ├── models/            # MongoDB models
-│   ├── routes/            # API routes
-│   ├── scripts/           # Database seeding
-│   ├── utils/             # Helper functions
-│   └── server.js          # Main server file
-│
-├── frontend/               # React frontend
-│   ├── public/            # Static assets
-│   ├── src/
-│   │   ├── components/    # React components
-│   │   ├── contexts/      # React contexts
-│   │   ├── hooks/         # Custom hooks
-│   │   ├── pages/         # Page components
-│   │   ├── services/      # API & Socket services
-│   │   ├── stores/        # State management
-│   │   └── utils/         # Helper functions
-│   └── package.json
-│
-└── README.md
-```
-
-## 🔧 Environment Variables
-
-### Backend (.env)
+#### Backend (.env)
 ```env
-PORT=5000
 NODE_ENV=development
+PORT=5000
 MONGODB_URI=mongodb://localhost:27017/stratify
-JWT_SECRET=your-jwt-secret
-JWT_EXPIRE=7d
-JWT_REFRESH_SECRET=your-refresh-secret
-JWT_REFRESH_EXPIRE=30d
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRE=30d
 CLIENT_URL=http://localhost:5173
 ```
 
-### Frontend (.env)
+#### Frontend (.env)
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
 ```
 
-## 🌐 API Endpoints
+## 📁 Project Structure
 
-### Authentication
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-- `POST /api/auth/refresh` - Refresh access token
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/forgot-password` - Request password reset
-- `PUT /api/auth/reset-password/:token` - Reset password
-
-### Users
-- `GET /api/users` - Get all users (Admin/Manager)
-- `GET /api/users/:id` - Get user by ID
-- `PUT /api/users/:id` - Update user profile
-- `PUT /api/users/:id/role` - Update user role (Admin)
-- `DELETE /api/users/:id` - Delete user (Admin)
-
-### Projects
-- `GET /api/projects` - Get user's projects
-- `POST /api/projects` - Create new project
-- `GET /api/projects/:id` - Get project details
-- `PUT /api/projects/:id` - Update project
-- `DELETE /api/projects/:id` - Delete project
-- `POST /api/projects/:id/team` - Add team member
-
-## 🔄 Real-time Events
-
-### Socket.IO Events
-- `user_online` - User comes online
-- `user_offline` - User goes offline
-- `project_created` - New project created
-- `project_updated` - Project updated
-- `project_deleted` - Project deleted
-- `team_member_added` - New team member added
-- `user_typing` - User typing indicator
-
-## 📧 Email System
-
-The application includes a comprehensive email system for user notifications with development-friendly features:
-
-### Development Mode (Default)
-- **Email Preview Files**: All emails are saved as HTML files in `backend/emails/` directory
-- **Browser Viewing**: Double-click any `.html` file to view the email in your browser
-- **Real-time Testing**: See exactly how emails look without needing SMTP credentials
-- **No Configuration Required**: Works out of the box for development
-
-### Production Mode
-Configure these environment variables in `backend/.env` for real email sending:
-
-```env
-# For Gmail (recommended)
-EMAIL_SERVICE=gmail
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password  # Use App Password, not regular password
-
-# For other SMTP providers
-EMAIL_HOST=smtp.your-provider.com
-EMAIL_PORT=587
-EMAIL_SECURE=false
-EMAIL_USER=your-email@provider.com
-EMAIL_PASS=your-password
+```
+stratify/
+├── backend/                 # Node.js backend application
+│   ├── config/             # Database configuration
+│   ├── middleware/         # Express middleware (auth, validation, etc.)
+│   ├── models/            # MongoDB models (User, Project, Task)
+│   ├── routes/            # API routes (auth, users, projects, tasks)
+│   ├── utils/             # Utility functions
+│   ├── server.js          # Main server file with Socket.IO setup
+│   └── package.json       # Backend dependencies
+├── frontend/               # React frontend application
+│   ├── src/
+│   │   ├── components/    # React components
+│   │   │   ├── auth/      # Authentication components
+│   │   │   ├── dashboard/ # Dashboard and main app components
+│   │   │   ├── sections/  # Landing page sections
+│   │   │   └── ui/        # Reusable UI components
+│   │   ├── contexts/      # React contexts (Auth, Realtime)
+│   │   ├── services/      # API services and Socket.IO client
+│   │   ├── App.jsx        # Main app component
+│   │   └── main.jsx       # App entry point
+│   ├── public/            # Static assets
+│   └── package.json       # Frontend dependencies
+└── README.md              # This file
 ```
 
-### Gmail Setup Instructions:
-1. Enable 2-factor authentication on your Google account
-2. Generate an App Password: Google Account → Security → App passwords
-3. Use the App Password in `EMAIL_PASS` (not your regular password)
+## 🔧 Key Features Implementation
 
-### Email Types Included:
-- ✅ **Registration Confirmation**: Welcome email with account setup info
-- ✅ **Password Reset**: Secure password reset links with expiration
-- ✅ **Email Verification**: Account verification emails
-- ✅ **Welcome Messages**: Beautiful onboarding emails
+### Real-time System
+- **Socket.IO Integration**: Bidirectional real-time communication
+- **Event Broadcasting**: Efficient room-based event distribution
+- **Automatic Reconnection**: Handles network interruptions gracefully
+- **State Synchronization**: Unified state management across all components
 
-### Testing Emails:
-```bash
-# Test all email templates
-cd backend
-npm run test-email
+### Authentication System
+- **JWT-based Authentication**: Secure token-based auth
+- **Protected Routes**: Route-level access control
+- **Role-based Permissions**: Granular permission system
+- **Session Management**: Persistent login with refresh tokens
 
-# Check generated email files
-ls emails/
-# Open any .html file in your browser to preview
-```
+### Data Management
+- **MongoDB Integration**: Flexible document-based storage
+- **Mongoose ODM**: Structured data modeling with validation
+- **Real-time Updates**: Database changes trigger Socket.IO events
+- **Data Relationships**: Proper user, project, and task associations
 
-## 🧪 Testing
+## 🎯 Usage
 
-### Test Email System
-```bash
-cd backend
-npm run test-email
-```
+### Creating Projects
+1. Navigate to the Dashboard
+2. Click "New Project" 
+3. Fill in project details (name, description, timeline)
+4. Add team members and assign roles
+5. Project appears instantly for all team members
 
-### Test Authentication
-```bash
-cd backend
-npm run test-auth
-```
+### Managing Tasks
+1. Select a project to view the Kanban board
+2. Click "Add Task" to create new tasks
+3. Drag and drop tasks between columns
+4. Assign tasks to team members
+5. All changes sync in real-time
 
-## 🚀 Deployment
+### Team Collaboration
+1. Add team members to projects with specific roles
+2. Assign tasks and track progress
+3. View live activity feeds
+4. Receive real-time notifications for updates
+
+## 🔒 Security Features
+
+- **JWT Authentication** with secure token storage
+- **Password Hashing** using bcryptjs
+- **Input Validation** and sanitization
+- **CORS Configuration** for secure cross-origin requests
+- **Helmet.js** for security headers
+- **Rate Limiting** to prevent abuse
+
+## 🚀 Production Deployment
 
 ### Backend Deployment
 1. Set production environment variables
-2. Use PM2 or similar process manager
-3. Configure reverse proxy (Nginx)
-4. Set up SSL certificate
+2. Configure MongoDB connection
+3. Set up process manager (PM2)
+4. Configure reverse proxy (Nginx)
+5. Enable SSL/HTTPS
 
 ### Frontend Deployment
-1. Build the project: `npm run build`
-2. Deploy to static hosting (Vercel, Netlify)
-3. Update API URLs for production
+1. Build the production bundle: `npm run build`
+2. Deploy to static hosting (Vercel, Netlify, etc.)
+3. Configure environment variables for production API
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes and commit: `git commit -m 'Add feature'`
+4. Push to the branch: `git push origin feature-name`
 5. Submit a pull request
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🆘 Support
+## 🎉 Acknowledgments
 
-If you encounter any issues:
-
-1. Check the console for error messages
-2. Ensure MongoDB is running
-3. Verify environment variables are set correctly
-4. Check that all dependencies are installed
-5. Make sure ports 5000 and 5173 are available
-
-## 🔮 Roadmap
-
-- [ ] Task Management System
-- [ ] File Upload & Attachments
-- [ ] Advanced Analytics Dashboard
-- [ ] Mobile App (React Native)
-- [ ] OAuth Integration (Google, GitHub)
-- [ ] Two-Factor Authentication
-- [ ] Email Notifications
-- [ ] Advanced Permissions System
-- [ ] API Rate Limiting
-- [ ] Audit Logging
+- Built with modern web technologies for optimal performance
+- Real-time features powered by Socket.IO
+- Responsive design with Tailwind CSS
+- Smooth animations with Framer Motion
 
 ---
 
-**Happy coding! 🚀**
+**Status**: ✅ Production Ready  
+**Real-time Features**: ✅ Fully Functional  
+**Last Updated**: April 2026

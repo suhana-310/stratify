@@ -34,31 +34,50 @@ import {
   Sparkles,
   Award,
   Timer,
-  Layers
+  Layers,
+  Search,
+  Edit,
+  Trash2,
+  Share2,
+  Copy,
+  Archive
 } from 'lucide-react'
-import { projectsAPI, usersAPI } from '../../services/api'
+import { projectsAPI, usersAPI, tasksAPI } from '../../services/api'
 import { useAuth } from '../../contexts/AuthContext'
+import { useRealtime } from '../../contexts/RealtimeContext'
 import socketService from '../../services/socket'
 import { toast } from 'react-hot-toast'
 import Card from '../ui/Card'
 import LoadingSpinner from '../ui/LoadingSpinner'
 import Badge from '../ui/Badge'
+import AddMemberModal from './AddMemberModal'
+import ProjectSelectionModal from './ProjectSelectionModal'
+import NewProjectModal from './NewProjectModal'
 
-export default function DashboardOverviewReal() {
-  const [isLoading, setIsLoading] = useState(true)
+export default function DashboardOverviewReal({ onProjectSelect }) {
+  const [isLoading, setIsLoading] = useState(false)
   const [selectedTimeframe, setSelectedTimeframe] = useState('week')
   const [showNotifications, setShowNotifications] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
-  const [projects, setProjects] = useState([])
-  const [stats, setStats] = useState({
-    activeProjects: 0,
-    teamMembers: 0,
-    hoursThisWeek: 0,
-    completedTasks: 0
-  })
-  const [recentActivity, setRecentActivity] = useState([])
-  const [notifications, setNotifications] = useState([])
+  const [showNewProjectModal, setShowNewProjectModal] = useState(false)
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false)
+  const [showProjectSelectionModal, setShowProjectSelectionModal] = useState(false)
+  const [selectedProjectForMember, setSelectedProjectForMember] = useState(null)
+  const [showCreateReportModal, setShowCreateReportModal] = useState(false)
+  const [showScheduleMeetingModal, setShowScheduleMeetingModal] = useState(false)
+  const [selectedProject, setSelectedProject] = useState(null)
+  const [showProjectActions, setShowProjectActions] = useState(null)
   const { user } = useAuth()
+  const { 
+    projects, 
+    tasks, 
+    users, 
+    activities, 
+    stats, 
+    loading, 
+    connected, 
+    actions 
+  } = useRealtime()
 
   const timeframes = [
     { value: 'day', label: 'Today' },
@@ -67,170 +86,177 @@ export default function DashboardOverviewReal() {
     { value: 'quarter', label: 'This Quarter' }
   ]
 
-  // Load dashboard data
+  // Load initial data when component mounts (only if not already loaded)
   useEffect(() => {
-    loadDashboardData()
-  }, [selectedTimeframe])
-
-  // Set up real-time listeners
-  useEffect(() => {
-    if (socketService.isSocketConnected()) {
-      socketService.on('project_created', handleProjectCreated)
-      socketService.on('project_updated', handleProjectUpdated)
-      socketService.on('project_deleted', handleProjectDeleted)
-      socketService.on('team_member_added', handleTeamMemberAdded)
-      socketService.on('user_online', handleUserOnline)
-      socketService.on('user_offline', handleUserOffline)
-
-      return () => {
-        socketService.off('project_created', handleProjectCreated)
-        socketService.off('project_updated', handleProjectUpdated)
-        socketService.off('project_deleted', handleProjectDeleted)
-        socketService.off('team_member_added', handleTeamMemberAdded)
-        socketService.off('user_online', handleUserOnline)
-        socketService.off('user_offline', handleUserOffline)
-      }
+    if (projects.length === 0 && !loading.projects) {
+      console.log('📊 Dashboard: Loading initial data...')
+      loadDashboardData()
     }
   }, [])
+
+  // Refresh data when timeframe changes
+  useEffect(() => {
+    if (selectedTimeframe) {
+      console.log('📊 Dashboard: Timeframe changed, refreshing stats...')
+      // Only refresh stats, not all data
+      refreshStats()
+    }
+  }, [selectedTimeframe])
+
+  const refreshStats = () => {
+    // Update stats based on current data and timeframe
+    const activeProjects = projects.filter(p => p.status === 'active').length
+    const completedTasks = tasks.filter(t => t.status === 'done').length
+    const teamMembers = users.length
+    
+    actions.updateStats({
+      activeProjects,
+      completedTasks,
+      teamMembers,
+      hoursThisWeek: Math.floor(Math.random() * 200) + 100 // Mock data for now
+    })
+  }
 
   const loadDashboardData = async () => {
     try {
       setIsLoading(true)
+      console.log('🔄 Loading dashboard data...')
       
-      // Load projects
-      const projectsResponse = await projectsAPI.getProjects({ limit: 10 })
-      const projectsData = projectsResponse.projects || []
-      setProjects(projectsData)
-
-      // Calculate stats
-      const activeProjects = projectsData.filter(p => p.status === 'active').length
-      const completedProjects = projectsData.filter(p => p.status === 'completed').length
+      // Use the RealtimeContext's loadInitialData function
+      await actions.loadInitialData()
       
-      // Load users for team stats
-      const usersResponse = await usersAPI.getUsers({ limit: 50 })
-      const usersData = usersResponse.users || []
-      
-      setStats({
-        activeProjects,
-        teamMembers: usersData.length,
-        hoursThisWeek: Math.floor(Math.random() * 200) + 100, // Mock data
-        completedTasks: completedProjects * 10 + Math.floor(Math.random() * 50)
-      })
-
-      // Generate recent activity from real data
-      generateRecentActivity(projectsData, usersData)
+      console.log('✅ Dashboard data loaded successfully')
       
     } catch (error) {
-      console.error('Failed to load dashboard data:', error)
+      console.error('❌ Failed to load dashboard data:', error)
       toast.error('Failed to load dashboard data')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const generateRecentActivity = (projectsData, usersData) => {
-    const activities = []
-    const actions = [
-      'completed task',
-      'updated project',
-      'commented on',
-      'created task',
-      'deployed to'
-    ]
-    
-    projectsData.slice(0, 5).forEach((project, index) => {
-      const randomUser = usersData[Math.floor(Math.random() * usersData.length)]
-      const randomAction = actions[Math.floor(Math.random() * actions.length)]
-      
-      activities.push({
-        id: index + 1,
-        user: randomUser?.name || 'Team Member',
-        action: randomAction,
-        target: project.name,
-        time: `${Math.floor(Math.random() * 60)} minutes ago`,
-        avatar: randomUser?.name?.charAt(0) || 'T',
-        type: ['success', 'info', 'comment', 'create', 'deploy'][Math.floor(Math.random() * 5)],
-        project: project.name,
-        details: `Working on ${project.name}`
-      })
-    })
-    
-    setRecentActivity(activities)
-  }
+  // Click outside handler for project actions
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showProjectActions && !event.target.closest('.project-actions')) {
+        setShowProjectActions(null)
+      }
+    }
 
-  // Real-time event handlers
-  const handleProjectCreated = (data) => {
-    setProjects(prev => [data.project, ...prev.slice(0, 9)])
-    setStats(prev => ({ ...prev, activeProjects: prev.activeProjects + 1 }))
-    
-    // Add to recent activity
-    setRecentActivity(prev => [{
-      id: Date.now(),
-      user: data.project.owner?.name || 'Team Member',
-      action: 'created project',
-      target: data.project.name,
-      time: 'just now',
-      avatar: data.project.owner?.name?.charAt(0) || 'T',
-      type: 'create',
-      project: data.project.name,
-      details: `New project created`
-    }, ...prev.slice(0, 4)])
-  }
-
-  const handleProjectUpdated = (data) => {
-    setProjects(prev => prev.map(project => 
-      project._id === data.project._id ? data.project : project
-    ))
-    
-    // Add to recent activity
-    setRecentActivity(prev => [{
-      id: Date.now(),
-      user: user?.name || 'You',
-      action: 'updated project',
-      target: data.project.name,
-      time: 'just now',
-      avatar: user?.name?.charAt(0) || 'Y',
-      type: 'info',
-      project: data.project.name,
-      details: `Project updated`
-    }, ...prev.slice(0, 4)])
-  }
-
-  const handleProjectDeleted = (data) => {
-    setProjects(prev => prev.filter(project => project._id !== data.projectId))
-    setStats(prev => ({ ...prev, activeProjects: Math.max(0, prev.activeProjects - 1) }))
-  }
-
-  const handleTeamMemberAdded = (data) => {
-    setStats(prev => ({ ...prev, teamMembers: prev.teamMembers + 1 }))
-    
-    // Add to recent activity
-    setRecentActivity(prev => [{
-      id: Date.now(),
-      user: data.newMember.name,
-      action: 'joined project',
-      target: data.project.name,
-      time: 'just now',
-      avatar: data.newMember.name?.charAt(0) || 'T',
-      type: 'success',
-      project: data.project.name,
-      details: `New team member joined`
-    }, ...prev.slice(0, 4)])
-  }
-
-  const handleUserOnline = (data) => {
-    // Could update online user count or show notification
-  }
-
-  const handleUserOffline = (data) => {
-    // Could update online user count
-  }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showProjectActions])
 
   const handleRefresh = async () => {
     setRefreshing(true)
     await loadDashboardData()
     setRefreshing(false)
     toast.success('Dashboard refreshed!')
+  }
+
+  // Handle new project creation or editing
+  const handleCreateProject = async (projectData) => {
+    try {
+      let response
+      
+      if (projectData._id) {
+        // Editing existing project
+        const { _id, ...updateData } = projectData
+        response = await projectsAPI.updateProject(_id, updateData)
+        
+        if (response.success) {
+          toast.success('Project updated successfully!')
+        } else {
+          toast.error(response.message || 'Failed to update project')
+        }
+      } else {
+        // Creating new project
+        response = await projectsAPI.createProject(projectData)
+        
+        if (response.success) {
+          toast.success('Project created successfully!')
+        } else {
+          toast.error(response.message || 'Failed to create project')
+        }
+      }
+      
+      setShowNewProjectModal(false)
+      setSelectedProject(null)
+    } catch (error) {
+      console.error('Failed to save project:', error)
+      toast.error('Failed to save project. Please try again.')
+    }
+  }
+
+  const handleProjectSelectionForMember = (project) => {
+    setSelectedProjectForMember(project)
+    setShowProjectSelectionModal(false)
+    setShowAddMemberModal(true)
+  }
+
+  // Handle project actions
+  const handleProjectAction = async (action, project) => {
+    try {
+      switch (action) {
+        case 'edit':
+          setSelectedProject(project)
+          setShowNewProjectModal(true)
+          break
+        case 'delete':
+          if (window.confirm(`Are you sure you want to delete "${project.name}"?`)) {
+            await projectsAPI.deleteProject(project._id)
+            toast.success('Project deleted successfully!')
+          }
+          break
+        case 'archive':
+          await projectsAPI.updateProject(project._id, { status: 'archived' })
+          toast.success('Project archived successfully!')
+          break
+        case 'duplicate':
+          const duplicateData = {
+            ...project,
+            name: `${project.name} (Copy)`,
+            _id: undefined,
+            createdAt: undefined,
+            updatedAt: undefined
+          }
+          await projectsAPI.createProject(duplicateData)
+          toast.success('Project duplicated successfully!')
+          break
+        case 'share':
+          navigator.clipboard.writeText(`${window.location.origin}/projects/${project._id}`)
+          toast.success('Project link copied to clipboard!')
+          break
+        default:
+          break
+      }
+    } catch (error) {
+      console.error(`Failed to ${action} project:`, error)
+      toast.error(`Failed to ${action} project. Please try again.`)
+    }
+    setShowProjectActions(null)
+  }
+
+  // Quick action handlers
+  const handleQuickAction = (actionType) => {
+    switch (actionType) {
+      case 'new-project':
+        setSelectedProject(null)
+        setShowNewProjectModal(true)
+        break
+      case 'add-member':
+        // Show project selection modal first
+        setShowProjectSelectionModal(true)
+        break
+      case 'create-report':
+        setShowCreateReportModal(true)
+        break
+      case 'schedule-meeting':
+        setShowScheduleMeetingModal(true)
+        break
+      default:
+        toast.info(`${actionType} feature coming soon!`)
+    }
   }
 
   const statsData = [
@@ -285,29 +311,29 @@ export default function DashboardOverviewReal() {
       icon: Plus, 
       label: 'New Project', 
       color: 'bg-blue-500',
-      action: () => toast.success('New Project modal would open')
+      action: () => handleQuickAction('new-project')
     },
     { 
       icon: UserPlus, 
       label: 'Add Member', 
       color: 'bg-green-500',
-      action: () => toast.success('Add Member modal would open')
+      action: () => handleQuickAction('add-member')
     },
     { 
       icon: FileText, 
       label: 'Create Report', 
       color: 'bg-purple-500',
-      action: () => toast.success('Create Report modal would open')
+      action: () => handleQuickAction('create-report')
     },
     { 
       icon: Calendar, 
       label: 'Schedule Meeting', 
       color: 'bg-orange-500',
-      action: () => toast.success('Schedule Meeting modal would open')
+      action: () => handleQuickAction('schedule-meeting')
     }
   ]
 
-  if (isLoading) {
+  if (isLoading && projects.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner size="lg" />
@@ -470,14 +496,80 @@ export default function DashboardOverviewReal() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-all duration-200 cursor-pointer group"
+                  className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-all duration-200 cursor-pointer group relative"
                   whileHover={{ scale: 1.02, y: -2 }}
+                  onClick={() => onProjectSelect && onProjectSelect(project._id)}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                        {project.name}
-                      </h4>
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                          {project.name}
+                        </h4>
+                        <div className="relative project-actions">
+                          <motion.button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setShowProjectActions(showProjectActions === project._id ? null : project._id)
+                            }}
+                            className="p-1 hover:bg-gray-200 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                          >
+                            <MoreHorizontal className="w-4 h-4 text-gray-500" />
+                          </motion.button>
+                          
+                          {/* Project Actions Dropdown */}
+                          <AnimatePresence>
+                            {showProjectActions === project._id && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                className="absolute right-0 top-8 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 min-w-[160px]"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  onClick={() => handleProjectAction('edit', project)}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  Edit Project
+                                </button>
+                                <button
+                                  onClick={() => handleProjectAction('duplicate', project)}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Copy className="w-4 h-4" />
+                                  Duplicate
+                                </button>
+                                <button
+                                  onClick={() => handleProjectAction('share', project)}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Share2 className="w-4 h-4" />
+                                  Share Link
+                                </button>
+                                <button
+                                  onClick={() => handleProjectAction('archive', project)}
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                >
+                                  <Archive className="w-4 h-4" />
+                                  Archive
+                                </button>
+                                <hr className="my-1" />
+                                <button
+                                  onClick={() => handleProjectAction('delete', project)}
+                                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  Delete
+                                </button>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2 mb-3">
                         <span className={`px-2 py-1 text-xs rounded-full font-medium ${
                           project.status === 'completed' ? 'bg-green-100 text-green-700' :
@@ -573,7 +665,7 @@ export default function DashboardOverviewReal() {
             </div>
             <div className="space-y-4">
               <AnimatePresence>
-                {recentActivity.map((activity, index) => (
+                {activities.slice(0, 5).map((activity, index) => (
                   <motion.div
                     key={activity.id}
                     initial={{ opacity: 0, y: 10 }}
@@ -584,13 +676,14 @@ export default function DashboardOverviewReal() {
                   >
                     <div className="relative">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-lg">
-                        {activity.avatar}
+                        {activity.user?.charAt(0) || 'U'}
                       </div>
                       <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
                         activity.type === 'success' ? 'bg-green-500' :
                         activity.type === 'info' ? 'bg-blue-500' :
                         activity.type === 'comment' ? 'bg-yellow-500' :
                         activity.type === 'create' ? 'bg-purple-500' :
+                        activity.type === 'team' ? 'bg-green-500' :
                         'bg-orange-500'
                       }`} />
                     </div>
@@ -609,6 +702,207 @@ export default function DashboardOverviewReal() {
           </div>
         </motion.div>
       </div>
+
+      {/* Modals */}
+      <NewProjectModal
+        isOpen={showNewProjectModal}
+        onClose={() => {
+          setShowNewProjectModal(false)
+          setSelectedProject(null)
+        }}
+        onSubmit={handleCreateProject}
+        initialData={selectedProject}
+      />
+
+      {/* Project Selection Modal */}
+      <ProjectSelectionModal
+        isOpen={showProjectSelectionModal}
+        onClose={() => setShowProjectSelectionModal(false)}
+        onProjectSelect={handleProjectSelectionForMember}
+        title="Select Project for Team Management"
+      />
+
+      {/* Add Member Modal */}
+      <AddMemberModal
+        isOpen={showAddMemberModal}
+        onClose={() => {
+          setShowAddMemberModal(false)
+          setSelectedProjectForMember(null)
+        }}
+        projectId={selectedProjectForMember?._id}
+        currentTeam={selectedProjectForMember?.team || []}
+      />
+
+      {/* Create Report Modal */}
+      <AnimatePresence>
+        {showCreateReportModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+              onClick={() => setShowCreateReportModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Create Report</h3>
+                  <button
+                    onClick={() => setShowCreateReportModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Report Type
+                    </label>
+                    <select className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <option value="weekly">Weekly Summary</option>
+                      <option value="monthly">Monthly Report</option>
+                      <option value="project">Project Status</option>
+                      <option value="team">Team Performance</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Date Range
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="date"
+                        className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <input
+                        type="date"
+                        className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => setShowCreateReportModal(false)}
+                      className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        toast.success('Report generation started!')
+                        setShowCreateReportModal(false)
+                      }}
+                      className="flex-1 px-4 py-2 text-white bg-purple-500 rounded-xl hover:bg-purple-600 transition-colors"
+                    >
+                      Generate
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Schedule Meeting Modal */}
+      <AnimatePresence>
+        {showScheduleMeetingModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+              onClick={() => setShowScheduleMeetingModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900">Schedule Meeting</h3>
+                  <button
+                    onClick={() => setShowScheduleMeetingModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Meeting Title
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Enter meeting title"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Date
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Time
+                      </label>
+                      <input
+                        type="time"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Duration (minutes)
+                    </label>
+                    <select className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <option value="30">30 minutes</option>
+                      <option value="60">1 hour</option>
+                      <option value="90">1.5 hours</option>
+                      <option value="120">2 hours</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button
+                      onClick={() => setShowScheduleMeetingModal(false)}
+                      className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        toast.success('Meeting scheduled successfully!')
+                        setShowScheduleMeetingModal(false)
+                      }}
+                      className="flex-1 px-4 py-2 text-white bg-orange-500 rounded-xl hover:bg-orange-600 transition-colors"
+                    >
+                      Schedule
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

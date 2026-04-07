@@ -9,6 +9,7 @@ import connectDB from './config/database.js';
 import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import projectRoutes from './routes/projects.js';
+import taskRoutes from './routes/tasks.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authenticateSocket } from './middleware/socketAuth.js';
 
@@ -67,6 +68,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

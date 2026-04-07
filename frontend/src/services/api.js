@@ -25,6 +25,7 @@ class ApiClient {
     }
 
     try {
+      console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
       const response = await fetch(url, config);
       
       // Handle different response types
@@ -38,23 +39,22 @@ class ApiClient {
       }
 
       if (!response.ok) {
+        console.log(`🌐 API Error: ${response.status} ${response.statusText}`, data);
+        
         // Handle specific HTTP status codes
         if (response.status === 401) {
-          // Unauthorized - clear auth data
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('auth_user');
-          localStorage.removeItem('refresh_token');
-          sessionStorage.removeItem('auth_token');
-          sessionStorage.removeItem('auth_user');
-          sessionStorage.removeItem('refresh_token');
+          console.log('🌐 401 Unauthorized - Token may be invalid');
+          // Don't automatically clear auth data here, let the AuthContext handle it
+          // This prevents clearing valid tokens during network issues
         }
         
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
 
+      console.log(`🌐 API Success: ${config.method || 'GET'} ${url}`);
       return data;
     } catch (error) {
-      console.error('API request failed:', {
+      console.error('🌐 API request failed:', {
         url,
         method: config.method || 'GET',
         error: error.message
@@ -266,28 +266,69 @@ export const projectsAPI = {
       role,
       permissions
     });
+  },
+
+  async addProjectLink(projectId, linkData) {
+    return await apiClient.post(`/projects/${projectId}/links`, linkData);
+  },
+
+  async updateProjectLink(projectId, linkId, linkData) {
+    return await apiClient.put(`/projects/${projectId}/links/${linkId}`, linkData);
+  },
+
+  async removeProjectLink(projectId, linkId) {
+    return await apiClient.delete(`/projects/${projectId}/links/${linkId}`);
   }
 };
 
-// Tasks API (placeholder for future implementation)
+// Tasks API
 export const tasksAPI = {
-  async getTasks() {
-    // TODO: Implement real tasks API
-    return { success: true, tasks: [] };
+  async getTasks(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    return await apiClient.get(`/tasks${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async getTaskById(id) {
+    return await apiClient.get(`/tasks/${id}`);
   },
 
   async createTask(taskData) {
-    // TODO: Implement real task creation
-    return { success: true, task: taskData };
+    return await apiClient.post('/tasks', taskData);
   },
 
   async updateTask(id, taskData) {
-    // TODO: Implement real task update
-    return { success: true, task: { id, ...taskData } };
+    return await apiClient.put(`/tasks/${id}`, taskData);
   },
 
   async deleteTask(id) {
-    // TODO: Implement real task deletion
-    return { success: true };
+    return await apiClient.delete(`/tasks/${id}`);
+  },
+
+  async addComment(taskId, text) {
+    return await apiClient.post(`/tasks/${taskId}/comments`, { text });
+  },
+
+  async updateProgress(taskId, progress) {
+    return await apiClient.put(`/tasks/${taskId}/progress`, { progress });
+  },
+
+  async toggleChecklistItem(taskId, itemId) {
+    return await apiClient.put(`/tasks/${taskId}/checklist/${itemId}`);
+  },
+
+  async bulkUpdatePositions(tasks) {
+    return await apiClient.put('/tasks/bulk/positions', { tasks });
+  },
+
+  async getProjectTasks(projectId, filters = {}) {
+    return await this.getTasks({ project: projectId, ...filters });
+  },
+
+  async getUserTasks(userId, filters = {}) {
+    return await this.getTasks({ assignee: userId, ...filters });
+  },
+
+  async getAllTasks(filters = {}) {
+    return await this.getTasks(filters);
   }
 };

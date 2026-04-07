@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Sparkles,
   X,
-  Menu
+  Menu,
+  Zap
 } from 'lucide-react'
 import { useTheme } from '../../contexts/ThemeContext'
 import Tooltip from './Tooltip'
@@ -65,6 +66,12 @@ const MENU_ITEMS = [
     label: 'Settings', 
     icon: Settings,
     description: 'App preferences'
+  },
+  { 
+    id: 'realtime-test', 
+    label: 'Real-time Test', 
+    icon: Zap,
+    description: 'Test real-time functionality'
   }
 ]
 

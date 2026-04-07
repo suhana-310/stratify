@@ -58,32 +58,51 @@ export const AuthProvider = ({ children }) => {
   // Check for existing auth on mount
   useEffect(() => {
     const checkAuth = async () => {
+      console.log('🔍 Starting auth check...');
       dispatch({ type: 'SET_LOADING', payload: true });
       
       try {
         const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
         const storedUser = localStorage.getItem('auth_user') || sessionStorage.getItem('auth_user');
         
+        console.log('🔍 Found stored data:', { 
+          hasToken: !!token, 
+          hasUser: !!storedUser,
+          tokenLength: token?.length || 0
+        });
+        
         if (token && storedUser) {
           try {
             // Parse stored user to validate it
             const parsedUser = JSON.parse(storedUser);
+            console.log('🔍 Parsed user:', parsedUser.name, parsedUser.email);
             
             // Verify token is still valid by fetching current user
+            console.log('🔍 Validating token with API...');
             const response = await authAPI.getCurrentUser();
+            console.log('🔍 Token validation successful');
+            
             dispatch({
               type: 'LOGIN_SUCCESS',
               payload: { user: response.user, token }
             });
             
-            // Connect to Socket.IO
-            socketService.connect(token);
-          } catch (error) {
-            console.log('Token validation failed:', error.message);
+            // Connect to Socket.IO with proper error handling
+            try {
+              await socketService.connect(token);
+              console.log('🔍 Socket connection established during auth check');
+            } catch (socketError) {
+              console.error('🔍 Socket connection failed during auth check:', socketError);
+              // Don't fail auth if socket connection fails
+            }
             
-            // If it's a network error, don't clear auth immediately
-            if (error.message.includes('fetch') || error.message.includes('network')) {
-              console.log('Network error during auth check, keeping stored auth');
+            console.log('🔍 Auth check completed successfully');
+          } catch (error) {
+            console.log('🔍 Token validation failed:', error.message);
+            
+            // If it's a network error, keep stored auth but don't fail
+            if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
+              console.log('🔍 Network error during auth check, using stored auth');
               try {
                 const parsedUser = JSON.parse(storedUser);
                 dispatch({
@@ -91,13 +110,20 @@ export const AuthProvider = ({ children }) => {
                   payload: { user: parsedUser, token }
                 });
                 // Try to connect to Socket.IO anyway
-                socketService.connect(token);
+                try {
+                  await socketService.connect(token);
+                  console.log('🔍 Socket connected despite network error');
+                } catch (socketError) {
+                  console.log('🔍 Socket connection also failed:', socketError.message);
+                }
+                console.log('🔍 Using stored auth due to network error');
               } catch (parseError) {
-                console.log('Failed to parse stored user, clearing auth');
+                console.log('🔍 Failed to parse stored user, clearing auth');
                 clearAuthData();
               }
-            } else {
+            } else if (error.message.includes('401') || error.message.includes('Unauthorized')) {
               // Token is invalid, try to refresh
+              console.log('🔍 Token expired, attempting refresh...');
               try {
                 const refreshResponse = await authAPI.refreshToken();
                 dispatch({
@@ -106,23 +132,38 @@ export const AuthProvider = ({ children }) => {
                 });
                 
                 // Connect to Socket.IO
-                socketService.connect(refreshResponse.token);
+                try {
+                  await socketService.connect(refreshResponse.token);
+                  console.log('🔍 Socket connected after token refresh');
+                } catch (socketError) {
+                  console.error('🔍 Socket connection failed after refresh:', socketError);
+                }
+                console.log('🔍 Token refresh successful');
               } catch (refreshError) {
-                console.log('Token refresh failed:', refreshError.message);
+                console.log('🔍 Token refresh failed:', refreshError.message);
                 clearAuthData();
               }
+            } else {
+              // Other errors, clear auth data
+              console.log('🔍 Auth validation failed, clearing auth data');
+              clearAuthData();
             }
           }
+        } else {
+          // No stored auth data, user needs to login
+          console.log('🔍 No stored auth data found');
         }
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.error('🔍 Auth check failed with error:', error);
         clearAuthData();
       } finally {
         dispatch({ type: 'SET_LOADING', payload: false });
+        console.log('🔍 Auth check completed');
       }
     };
 
     const clearAuthData = () => {
+      console.log('🔍 Clearing auth data...');
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
       localStorage.removeItem('refresh_token');
@@ -132,7 +173,13 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'LOGOUT' });
     };
 
-    checkAuth();
+    // Add error handling for the entire checkAuth function
+    try {
+      checkAuth();
+    } catch (error) {
+      console.error('🔍 Critical error in checkAuth:', error);
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
   }, []);
 
   // Login function
@@ -147,8 +194,15 @@ export const AuthProvider = ({ children }) => {
         payload: { user: response.user, token: response.token }
       });
       
-      // Connect to Socket.IO
-      socketService.connect(response.token);
+      // Connect to Socket.IO with proper error handling
+      try {
+        await socketService.connect(response.token);
+        console.log('🔌 Socket connected successfully after login');
+      } catch (socketError) {
+        console.error('🔌 Socket connection failed after login:', socketError);
+        // Don't fail login if socket connection fails
+        toast.warning('Connected but real-time features may be limited');
+      }
       
       toast.success('Welcome back!');
       return { success: true };
@@ -173,8 +227,14 @@ export const AuthProvider = ({ children }) => {
         payload: { user: response.user, token: response.token }
       });
       
-      // Connect to Socket.IO
-      socketService.connect(response.token);
+      // Connect to Socket.IO with proper error handling
+      try {
+        await socketService.connect(response.token);
+        console.log('🔌 Socket connected successfully after registration');
+      } catch (socketError) {
+        console.error('🔌 Socket connection failed after registration:', socketError);
+        toast.warning('Registered but real-time features may be limited');
+      }
       
       toast.success('Registration successful! Welcome to Stratify!');
       return { success: true };

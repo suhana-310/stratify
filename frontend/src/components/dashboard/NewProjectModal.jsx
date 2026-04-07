@@ -4,7 +4,7 @@ import { X, Calendar, DollarSign, Tag } from 'lucide-react'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
 
-const NewProjectModal = ({ isOpen, onClose, onSubmit }) => {
+const NewProjectModal = ({ isOpen, onClose, onSubmit, initialData }) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -14,10 +14,45 @@ const NewProjectModal = ({ isOpen, onClose, onSubmit }) => {
     priority: 'medium',
     status: 'active',
     tags: '',
+    links: [],
     teamMembers: []
   })
 
   const [errors, setErrors] = useState({})
+  const [isEditing, setIsEditing] = useState(false)
+
+  // Update form data when initialData changes (for editing)
+  useEffect(() => {
+    if (initialData && isOpen) {
+      setIsEditing(true)
+      setFormData({
+        name: initialData.name || '',
+        description: initialData.description || '',
+        startDate: initialData.timeline?.startDate ? new Date(initialData.timeline.startDate).toISOString().split('T')[0] : '',
+        endDate: initialData.timeline?.endDate ? new Date(initialData.timeline.endDate).toISOString().split('T')[0] : '',
+        budget: initialData.budget?.allocated?.toString() || '',
+        priority: initialData.priority || 'medium',
+        status: initialData.status || 'active',
+        tags: initialData.tags?.join(', ') || '',
+        links: initialData.links || [],
+        teamMembers: initialData.team || []
+      })
+    } else if (isOpen) {
+      setIsEditing(false)
+      setFormData({
+        name: '',
+        description: '',
+        startDate: '',
+        endDate: '',
+        budget: '',
+        priority: 'medium',
+        status: 'active',
+        tags: '',
+        links: [],
+        teamMembers: []
+      })
+    }
+  }, [initialData, isOpen])
 
   // Handle keyboard events
   useEffect(() => {
@@ -83,18 +118,44 @@ const NewProjectModal = ({ isOpen, onClose, onSubmit }) => {
     
     if (validateForm()) {
       const projectData = {
-        ...formData,
-        budget: formData.budget ? parseFloat(formData.budget) : 0,
-        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        priority: formData.priority,
+        status: formData.status,
         timeline: {
           startDate: formData.startDate,
           endDate: formData.endDate
-        }
+        },
+        budget: {
+          allocated: formData.budget ? parseFloat(formData.budget) : 0,
+          spent: 0,
+          currency: 'USD'
+        },
+        tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag),
+        links: (formData.links || []).filter(link => link.title && link.url).map(link => ({
+          title: link.title.trim(),
+          url: link.url.trim(),
+          type: link.type || 'other'
+        })),
+        color: getRandomProjectColor()
+      }
+      
+      // If editing, include the project ID
+      if (isEditing && initialData) {
+        projectData._id = initialData._id
       }
       
       onSubmit(projectData)
       handleClose()
     }
+  }
+
+  const getRandomProjectColor = () => {
+    const colors = [
+      '#6366f1', '#8b5cf6', '#ec4899', '#ef4444', 
+      '#f59e0b', '#10b981', '#06b6d4', '#84cc16'
+    ]
+    return colors[Math.floor(Math.random() * colors.length)]
   }
 
   const handleClose = () => {
@@ -107,6 +168,7 @@ const NewProjectModal = ({ isOpen, onClose, onSubmit }) => {
       priority: 'medium',
       status: 'active',
       tags: '',
+      links: [],
       teamMembers: []
     })
     setErrors({})
@@ -149,7 +211,9 @@ const NewProjectModal = ({ isOpen, onClose, onSubmit }) => {
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
               {/* Fixed Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-white rounded-t-2xl flex-shrink-0">
-                <h2 className="text-2xl font-bold text-gray-900">Create New Project</h2>
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {isEditing ? 'Edit Project' : 'Create New Project'}
+                </h2>
                 <button
                   onClick={handleClose}
                   className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
@@ -299,6 +363,79 @@ const NewProjectModal = ({ isOpen, onClose, onSubmit }) => {
                     </p>
                   </div>
 
+                  {/* Project Links */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Project Links (Optional)
+                    </label>
+                    <div className="space-y-3">
+                      {formData.links && formData.links.map((link, index) => (
+                        <div key={index} className="flex gap-2">
+                          <Input
+                            type="text"
+                            value={link.title}
+                            onChange={(e) => {
+                              const newLinks = [...formData.links]
+                              newLinks[index].title = e.target.value
+                              handleInputChange('links', newLinks)
+                            }}
+                            placeholder="Link title"
+                            className="flex-1"
+                          />
+                          <Input
+                            type="url"
+                            value={link.url}
+                            onChange={(e) => {
+                              const newLinks = [...formData.links]
+                              newLinks[index].url = e.target.value
+                              handleInputChange('links', newLinks)
+                            }}
+                            placeholder="https://example.com"
+                            className="flex-1"
+                          />
+                          <select
+                            value={link.type}
+                            onChange={(e) => {
+                              const newLinks = [...formData.links]
+                              newLinks[index].type = e.target.value
+                              handleInputChange('links', newLinks)
+                            }}
+                            className="px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          >
+                            <option value="repository">Repository</option>
+                            <option value="deployment">Live Site</option>
+                            <option value="documentation">Docs</option>
+                            <option value="design">Design</option>
+                            <option value="other">Other</option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newLinks = formData.links.filter((_, i) => i !== index)
+                              handleInputChange('links', newLinks)
+                            }}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newLinks = [...(formData.links || []), { title: '', url: '', type: 'other' }]
+                          handleInputChange('links', newLinks)
+                        }}
+                        className="w-full p-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-colors"
+                      >
+                        + Add Link
+                      </button>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Add links to repositories, live demos, documentation, etc.
+                    </p>
+                  </div>
+
                   {/* Extra spacing for better scrolling */}
                   <div className="h-6"></div>
                 </form>
@@ -318,7 +455,7 @@ const NewProjectModal = ({ isOpen, onClose, onSubmit }) => {
                   onClick={handleSubmit}
                   className="min-w-[120px]"
                 >
-                  Create Project
+                  {isEditing ? 'Update Project' : 'Create Project'}
                 </Button>
               </div>
             </div>
