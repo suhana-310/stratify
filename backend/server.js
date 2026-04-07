@@ -32,6 +32,7 @@ const io = new Server(server, {
           origin.includes('firebaseapp.com') ||
           origin.includes('web.app') ||
           origin.includes('stratify-2026') ||
+          origin.includes('stratify31-app') ||
           origin === process.env.CLIENT_URL ||
           origin.includes('localhost')) {
         return callback(null, true);
@@ -73,6 +74,7 @@ app.use(cors({
         origin.includes('firebaseapp.com') ||
         origin.includes('web.app') ||
         origin.includes('stratify-2026') ||
+        origin.includes('stratify31-app') ||
         origin === process.env.CLIENT_URL ||
         origin === 'http://localhost:5173' ||
         origin === 'http://localhost:5174') {

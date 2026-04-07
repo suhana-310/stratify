@@ -13,6 +13,6 @@ call firebase deploy --only hosting
 
 echo.
 echo ✅ Deployment complete!
-echo 🔗 Your app should be live at: https://stratify-2026.web.app
+echo 🔗 Your app should be live at: https://stratify31-app.web.app
 echo.
 pause
