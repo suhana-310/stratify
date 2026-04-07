@@ -66,12 +66,6 @@ const MENU_ITEMS = [
     label: 'Settings', 
     icon: Settings,
     description: 'App preferences'
-  },
-  { 
-    id: 'realtime-test', 
-    label: 'Real-time Test', 
-    icon: Zap,
-    description: 'Test real-time functionality'
   }
 ]
 
@@ -368,25 +362,24 @@ const Sidebar = React.memo(({
               initial="hidden"
               animate="visible"
               exit="hidden"
-              className="fixed left-0 top-0 h-full w-80 bg-white/95 backdrop-blur-xl border-r border-gray-200/50 z-50 shadow-2xl"
+              className="fixed left-0 top-0 h-full w-80 max-w-[85vw] bg-white/95 backdrop-blur-xl border-r border-gray-200/50 z-50 shadow-2xl safe-area-inset"
               role="navigation"
               aria-label="Main navigation"
               onClick={onInteraction}
             >
               {/* Mobile header */}
-              <div className="flex items-center justify-between p-4 border-b border-gray-200/50">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200/50 safe-area-top">
                 <div className="flex items-center gap-3">
                   <img 
                     src="/logo.png" 
                     alt="Stratify Logo" 
-                    className="w-28 h-28 object-contain"
+                    className="w-20 h-20 sm:w-28 sm:h-28 object-contain"
                   />
-
                 </div>
                 
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors touch-target"
                   aria-label="Close navigation"
                 >
                   <X className="w-5 h-5 text-gray-600" />
@@ -394,7 +387,7 @@ const Sidebar = React.memo(({
               </div>
 
               {/* Navigation */}
-              <nav className="p-4" role="menu">
+              <nav className="p-4 flex-1 overflow-y-auto" role="menu">
                 <ul className="space-y-1" role="none">
                   {MENU_ITEMS.map((item, index) => (
                     <li key={item.id} role="none">
@@ -411,7 +404,7 @@ const Sidebar = React.memo(({
               </nav>
 
               {/* Mobile user profile */}
-              <div className="absolute bottom-4 left-4 right-4">
+              <div className="p-4 border-t border-gray-200/50 safe-area-bottom">
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-200/50 shadow-lg">
                   <div className="flex items-center gap-3">
                     <div className="relative">

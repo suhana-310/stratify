@@ -342,29 +342,29 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
   }
 
   return (
-    <div className="content-spacing w-full max-w-none">
+    <div className="content-spacing w-full max-w-none p-responsive">
       {/* Header Section with Controls */}
       <motion.div 
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8"
+        className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 lg:gap-6 mb-6 lg:mb-8"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 leading-tight">
             Welcome back, {user?.name || 'User'}!
           </h1>
-          <p className="text-gray-600">Here's what's happening with your projects.</p>
+          <p className="text-sm sm:text-base text-gray-600 leading-relaxed">Here's what's happening with your projects.</p>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
           {/* Timeframe Selector */}
-          <div className="flex items-center bg-white rounded-xl border border-gray-200 p-1">
+          <div className="flex items-center bg-white rounded-xl border border-gray-200 p-1 overflow-x-auto">
             {timeframes.map((timeframe) => (
               <motion.button
                 key={timeframe.value}
                 onClick={() => setSelectedTimeframe(timeframe.value)}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                className={`px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap touch-target ${
                   selectedTimeframe === timeframe.value
                     ? 'bg-blue-500 text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -377,37 +377,40 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
             ))}
           </div>
 
-          {/* Refresh Button */}
-          <motion.button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="p-3 bg-white rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <RefreshCw className={`w-5 h-5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
-          </motion.button>
-
-          {/* Quick Actions */}
           <div className="flex items-center gap-2">
-            {quickActions.map((action, index) => (
-              <motion.button
-                key={action.label}
-                onClick={action.action}
-                className={`p-3 ${action.color} text-white rounded-xl hover:shadow-lg transition-all duration-200`}
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
-                title={action.label}
-              >
-                <action.icon className="w-5 h-5" />
-              </motion.button>
-            ))}
+            {/* Refresh Button */}
+            <motion.button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-2 sm:p-3 bg-white rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors duration-200 disabled:opacity-50 touch-target"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              title="Refresh dashboard"
+            >
+              <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
+            </motion.button>
+
+            {/* Quick Actions */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              {quickActions.map((action, index) => (
+                <motion.button
+                  key={action.label}
+                  onClick={action.action}
+                  className={`p-2 sm:p-3 ${action.color} text-white rounded-xl hover:shadow-lg transition-all duration-200 touch-target`}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  title={action.label}
+                >
+                  <action.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                </motion.button>
+              ))}
+            </div>
           </div>
         </div>
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 lg:mb-8">
         {statsData.map((stat, index) => (
           <motion.div
             key={stat.title}
@@ -415,26 +418,26 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
-            <div className="bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex-1">
+            <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100">
+              <div className="flex items-center justify-between mb-3 sm:mb-4">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{stat.title}</p>
                     <motion.div 
-                      className={`p-3 bg-gradient-to-br ${stat.gradient} rounded-xl shadow-lg`}
+                      className={`p-2 sm:p-3 bg-gradient-to-br ${stat.gradient} rounded-xl shadow-lg flex-shrink-0`}
                       whileHover={{ scale: 1.1, rotate: 5 }}
                     >
-                      <stat.icon className="w-5 h-5 text-white" />
+                      <stat.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </motion.div>
                   </div>
-                  <p className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</p>
-                  <p className="text-xs text-gray-500 mb-3">{stat.description}</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">{stat.value}</p>
+                  <p className="text-xs text-gray-500 mb-2 sm:mb-3 truncate">{stat.description}</p>
                 </div>
               </div>
               
               <div className="flex items-center justify-between">
                 <motion.div
-                  className={`flex items-center px-3 py-1.5 rounded-full text-sm font-medium ${
+                  className={`flex items-center px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium ${
                     stat.trend === 'up' 
                       ? 'bg-green-100 text-green-700' 
                       : 'bg-red-100 text-red-700'
@@ -442,15 +445,15 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                   whileHover={{ scale: 1.05 }}
                 >
                   {stat.trend === 'up' ? (
-                    <ArrowUp className="w-4 h-4 mr-1" />
+                    <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   ) : (
-                    <ArrowDown className="w-4 h-4 mr-1" />
+                    <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   )}
                   {stat.change}
                 </motion.div>
                 <div className="text-right">
                   <p className="text-xs text-gray-500">vs last {selectedTimeframe}</p>
-                  <p className={`text-sm font-semibold ${
+                  <p className={`text-xs sm:text-sm font-semibold ${
                     stat.percentage > 0 ? 'text-green-600' : 'text-red-600'
                   }`}>
                     {stat.percentage > 0 ? '+' : ''}{stat.percentage}%
@@ -462,61 +465,61 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Recent Projects */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 h-full">
-            <div className="pb-4 border-b border-gray-200 mb-6">
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 h-full">
+            <div className="pb-3 sm:pb-4 border-b border-gray-200 mb-4 sm:mb-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-blue-500" />
-                  Recent Projects
-                  <Badge variant="secondary" className="ml-2">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+                  <span className="truncate">Recent Projects</span>
+                  <Badge variant="secondary" className="ml-2 text-xs">
                     {projects.length}
                   </Badge>
                 </h3>
                 <motion.button 
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   title="View all projects"
                 >
-                  <ExternalLink className="w-4 h-4 text-gray-500" />
+                  <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                 </motion.button>
               </div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto">
               {projects.slice(0, 5).map((project, index) => (
                 <motion.div
                   key={project._id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-all duration-200 cursor-pointer group relative"
+                  className="p-3 sm:p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-all duration-200 cursor-pointer group relative"
                   whileHover={{ scale: 1.02, y: -2 }}
                   onClick={() => onProjectSelect && onProjectSelect(project._id)}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
+                  <div className="flex items-start justify-between mb-2 sm:mb-3">
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        <h4 className="font-semibold text-sm sm:text-base text-gray-900 group-hover:text-blue-600 transition-colors truncate pr-2">
                           {project.name}
                         </h4>
-                        <div className="relative project-actions">
+                        <div className="relative project-actions flex-shrink-0">
                           <motion.button
                             onClick={(e) => {
                               e.stopPropagation()
                               setShowProjectActions(showProjectActions === project._id ? null : project._id)
                             }}
-                            className="p-1 hover:bg-gray-200 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                            className="p-1 hover:bg-gray-200 rounded-lg transition-colors opacity-0 group-hover:opacity-100 touch-target"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                           >
-                            <MoreHorizontal className="w-4 h-4 text-gray-500" />
+                            <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                           </motion.button>
                           
                           {/* Project Actions Dropdown */}
@@ -531,28 +534,28 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                               >
                                 <button
                                   onClick={() => handleProjectAction('edit', project)}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 touch-target"
                                 >
                                   <Edit className="w-4 h-4" />
                                   Edit Project
                                 </button>
                                 <button
                                   onClick={() => handleProjectAction('duplicate', project)}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 touch-target"
                                 >
                                   <Copy className="w-4 h-4" />
                                   Duplicate
                                 </button>
                                 <button
                                   onClick={() => handleProjectAction('share', project)}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 touch-target"
                                 >
                                   <Share2 className="w-4 h-4" />
                                   Share Link
                                 </button>
                                 <button
                                   onClick={() => handleProjectAction('archive', project)}
-                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 touch-target"
                                 >
                                   <Archive className="w-4 h-4" />
                                   Archive
@@ -560,7 +563,7 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                                 <hr className="my-1" />
                                 <button
                                   onClick={() => handleProjectAction('delete', project)}
-                                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 touch-target"
                                 >
                                   <Trash2 className="w-4 h-4" />
                                   Delete
@@ -570,7 +573,7 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                           </AnimatePresence>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-2 sm:mb-3">
                         <span className={`px-2 py-1 text-xs rounded-full font-medium ${
                           project.status === 'completed' ? 'bg-green-100 text-green-700' :
                           project.status === 'active' ? 'bg-blue-100 text-blue-700' :
@@ -589,21 +592,26 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                       </div>
                     </div>
                     {project.timeline?.endDate && (
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0 ml-2">
                         <Calendar className="w-3 h-3" />
-                        {new Date(project.timeline.endDate).toLocaleDateString()}
+                        <span className="hidden sm:inline">
+                          {new Date(project.timeline.endDate).toLocaleDateString()}
+                        </span>
+                        <span className="sm:hidden">
+                          {new Date(project.timeline.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
                       </div>
                     )}
                   </div>
                   
-                  <div className="mb-3">
-                    <div className="flex justify-between text-xs mb-2">
+                  <div className="mb-2 sm:mb-3">
+                    <div className="flex justify-between text-xs mb-1 sm:mb-2">
                       <span className="text-gray-600 font-medium">Progress</span>
                       <span className="text-gray-900 font-semibold">{project.progress || 0}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2 overflow-hidden">
                       <motion.div 
-                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full"
+                        className="bg-gradient-to-r from-blue-500 to-blue-600 h-1.5 sm:h-2 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${project.progress || 0}%` }}
                         transition={{ duration: 1, delay: 0.5 + index * 0.1 }}
@@ -612,11 +620,11 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <div className="flex -space-x-2">
+                    <div className="flex -space-x-1 sm:-space-x-2">
                       {project.team?.slice(0, 3).map((member, i) => (
                         <motion.div
                           key={i}
-                          className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-xs font-semibold text-white border-2 border-white shadow-sm"
+                          className="w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-xs font-semibold text-white border-2 border-white shadow-sm"
                           whileHover={{ scale: 1.1, zIndex: 10 }}
                           style={{ zIndex: project.team.length - i }}
                           title={member.user?.name || 'Team Member'}
@@ -625,7 +633,7 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                         </motion.div>
                       ))}
                       {project.team?.length > 3 && (
-                        <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-xs font-semibold text-white border-2 border-white">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 bg-gray-400 rounded-full flex items-center justify-center text-xs font-semibold text-white border-2 border-white">
                           +{project.team.length - 3}
                         </div>
                       )}
@@ -646,24 +654,24 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
         >
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 h-full">
-            <div className="pb-4 border-b border-gray-200 mb-6">
+          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-sm border border-gray-100 h-full">
+            <div className="pb-3 sm:pb-4 border-b border-gray-200 mb-4 sm:mb-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-green-500" />
-                  Live Activity
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 flex items-center gap-2">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
+                  <span className="truncate">Live Activity</span>
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                 </h3>
                 <motion.button 
-                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200"
+                  className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-xl transition-colors duration-200 touch-target"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <MoreHorizontal className="w-4 h-4 text-gray-500" />
+                  <MoreHorizontal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-500" />
                 </motion.button>
               </div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4 max-h-96 overflow-y-auto">
               <AnimatePresence>
                 {activities.slice(0, 5).map((activity, index) => (
                   <motion.div
@@ -672,13 +680,13 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.4, delay: index * 0.1 }}
-                    className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 transition-colors duration-200 group"
+                    className="flex items-center space-x-3 p-2 sm:p-3 rounded-xl hover:bg-gray-50 transition-colors duration-200 group"
                   >
-                    <div className="relative">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-lg">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-xs sm:text-sm font-semibold text-white shadow-lg">
                         {activity.user?.charAt(0) || 'U'}
                       </div>
-                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${
+                      <div className={`absolute -bottom-1 -right-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 border-white ${
                         activity.type === 'success' ? 'bg-green-500' :
                         activity.type === 'info' ? 'bg-blue-500' :
                         activity.type === 'comment' ? 'bg-yellow-500' :
@@ -688,10 +696,10 @@ export default function DashboardOverviewReal({ onProjectSelect }) {
                       }`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">
+                      <p className="text-xs sm:text-sm text-gray-900 leading-relaxed">
                         <span className="font-semibold">{activity.user}</span>{' '}
                         <span className="text-gray-600">{activity.action}</span>{' '}
-                        <span className="font-medium text-blue-600">{activity.target}</span>
+                        <span className="font-medium text-blue-600 truncate">{activity.target}</span>
                       </p>
                       <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
                     </div>
