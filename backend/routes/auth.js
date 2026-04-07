@@ -14,6 +14,34 @@ import { generateTokenResponse } from '../utils/auth.js';
 
 const router = express.Router();
 
+// @desc    Check email configuration (for debugging)
+// @route   GET /api/auth/email-check
+// @access  Public
+router.get('/email-check', async (req, res) => {
+  try {
+    const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
+    
+    res.json({
+      success: true,
+      emailConfigured,
+      config: {
+        service: process.env.EMAIL_SERVICE || 'Not set',
+        host: process.env.EMAIL_HOST || 'Not set',
+        port: process.env.EMAIL_PORT || 'Not set',
+        user: process.env.EMAIL_USER ? process.env.EMAIL_USER.replace(/(.{3}).*(@.*)/, '$1***$2') : 'Not set',
+        hasPassword: !!process.env.EMAIL_PASS,
+        environment: process.env.NODE_ENV
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to check email configuration',
+      error: error.message
+    });
+  }
+});
+
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
