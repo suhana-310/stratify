@@ -19,31 +19,72 @@ dotenv.config();
 const app = express();
 const server = createServer(app);
 
-// Socket.IO setup with authentication
+// Socket.IO setup with flexible CORS for cross-device access
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.CLIENT_URL || "http://localhost:5173",
-      "http://localhost:5173",
-      "http://localhost:5174"
-    ],
+    origin: function (origin, callback) {
+      // Allow requests with no origin
+      if (!origin) return callback(null, true);
+      
+      // Allow Vercel domains and localhost
+      if (origin.includes('vercel.app') || 
+          origin.includes('stratify-31.vercel.app') ||
+          origin === process.env.CLIENT_URL ||
+          origin.includes('localhost')) {
+        return callback(null, true);
+      }
+      
+      // Allow the request
+      callback(null, true);
+    },
     methods: ["GET", "POST"],
-    credentials: true
-  }
+    credentials: true,
+    allowEIO3: true
+  },
+  transports: ['websocket', 'polling']
 });
 
 // Connect to MongoDB
 connectDB();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'", "https:", "wss:", "ws:"],
+    },
+  },
+}));
+
+// More flexible CORS configuration for cross-device access
 app.use(cors({
-  origin: [
-    process.env.CLIENT_URL || "http://localhost:5173",
-    "http://localhost:5173",
-    "http://localhost:5174"
-  ],
-  credentials: true
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow Vercel domains (including preview deployments)
+    if (origin.includes('vercel.app') || 
+        origin.includes('stratify-31.vercel.app') ||
+        origin === process.env.CLIENT_URL ||
+        origin === 'http://localhost:5173' ||
+        origin === 'http://localhost:5174') {
+      return callback(null, true);
+    }
+    
+    // For development, allow localhost on any port
+    if (process.env.NODE_ENV === 'development' && origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    
+    // Allow the request
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Authorization']
 }));
 
 // Rate limiting
@@ -61,6 +102,22 @@ app.use(express.urlencoded({ extended: true }));
 // Make io accessible to routes
 app.use((req, res, next) => {
   req.io = io;
+  next();
+});
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.header('Access-Control-Allow-Origin', req.get('Origin') || '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.sendStatus(200);
+});
+
+// Debug middleware for CORS issues
+app.use((req, res, next) => {
+  const origin = req.get('Origin');
+  console.log(`📡 Request from origin: ${origin || 'no-origin'} - ${req.method} ${req.path}`);
   next();
 });
 
