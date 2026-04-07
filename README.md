@@ -1,238 +1,135 @@
-# Stratify - Real-time Project Management Platform
+# 🚀 Stratify - Advanced Project Management System
 
-A modern, real-time project management platform built with React, Node.js, and Socket.IO for seamless team collaboration.
+## Overview
+Stratify is a modern, real-time project management system built with React, Node.js, and MongoDB. It features advanced 3D animations, real-time collaboration, and a premium UI/UX design.
+
+## 🌐 Live Application
+- **Frontend**: https://stratify31-app.web.app
+- **Backend API**: https://stratify-production-57f5.up.railway.app/api
+
+## 🔑 Test Credentials
+- **Email**: roshankumarsingh021@gmail.com
+- **Password**: Password123
 
 ## ✨ Features
+- **Real-time Collaboration**: Socket.IO powered live updates
+- **Project Management**: Kanban boards, task tracking, team management
+- **3D Animations**: Advanced GSAP and Three.js animations
+- **Authentication**: JWT-based secure authentication
+- **Cross-device Support**: Works on all devices and browsers
+- **Modern UI/UX**: Premium design with smooth animations
 
-### 🚀 Real-time Collaboration
-- **Live Updates**: All changes sync instantly across all connected users
-- **Socket.IO Integration**: Robust real-time communication with automatic reconnection
-- **Cross-Component Sync**: Projects, tasks, and team updates reflect everywhere immediately
+## 🏗️ Architecture
+```
+Firebase Hosting ↔ Railway Backend ↔ MongoDB Atlas
+     ↓                    ↓                ↓
+React + Vite        Node.js + Express   Database
+Socket.IO Client    Socket.IO Server    User & Project Data
+```
 
-### 📊 Project Management
-- **Project Creation & Management**: Create, update, and organize projects with timelines
-- **Team Management**: Add/remove team members with role-based permissions
-- **Project Links**: Manage project-related links and resources
-- **Status Tracking**: Monitor project progress with live status updates
+## 🚀 Deployment Status
+- ✅ **Frontend**: Firebase Hosting (stratify31-app.web.app)
+- ✅ **Backend**: Railway (stratify-production-57f5.up.railway.app)
+- ✅ **Database**: MongoDB Atlas (stratify-cluster.7jv5xvd.mongodb.net)
+- ✅ **Real-time**: Socket.IO connections active
+- ✅ **CORS**: Configured for cross-device access
 
-### 📋 Kanban Board
-- **Drag & Drop**: Smooth task management with real-time position updates
-- **Multiple Columns**: Todo, In Progress, Review, Done
-- **Task Details**: Comprehensive task information with priorities, due dates, and assignments
-- **Live Updates**: See task changes instantly without page refresh
+## 📁 Project Structure
+```
+stratify/
+├── frontend/          # React + Vite frontend
+│   ├── src/
+│   ├── public/
+│   ├── firebase.json  # Firebase hosting config
+│   └── package.json
+├── backend/           # Node.js + Express backend
+│   ├── routes/        # API routes
+│   ├── models/        # MongoDB models
+│   ├── middleware/    # Auth & validation
+│   ├── utils/         # Helper functions
+│   └── server.js      # Main server file
+└── README.md
 
-### 👥 Team Collaboration
-- **User Management**: Comprehensive user profiles and authentication
-- **Role-based Access**: Owner, Manager, Developer, Designer, Viewer roles
-- **Team Activities**: Live activity feed showing team actions
-- **Real-time Notifications**: Instant updates for task assignments and project changes
-
-### 📈 Dashboard Analytics
-- **Live Statistics**: Real-time project and task metrics
-- **Activity Overview**: Recent activities and project summaries
-- **Team Insights**: Team member statistics and project distribution
+```
 
 ## 🛠️ Technology Stack
 
 ### Frontend
-- **React 18** with Hooks and Context API
-- **Vite** for fast development and building
-- **Tailwind CSS** for modern, responsive styling
-- **Framer Motion** for smooth animations
-- **Socket.IO Client** for real-time communication
-- **React Hot Toast** for user notifications
+- **React 18** - UI framework
+- **Vite** - Build tool and dev server
+- **Three.js** - 3D graphics and animations
+- **GSAP** - Advanced animations
+- **Socket.IO Client** - Real-time communication
+- **Tailwind CSS** - Styling framework
+- **React Router** - Client-side routing
 
 ### Backend
-- **Node.js** with Express.js framework
-- **MongoDB** with Mongoose ODM
-- **Socket.IO** for real-time bidirectional communication
-- **JWT Authentication** with secure token management
-- **bcryptjs** for password hashing
-- **Helmet** for security headers
+- **Node.js** - Runtime environment
+- **Express.js** - Web framework
+- **Socket.IO** - Real-time communication
+- **MongoDB** - Database
+- **Mongoose** - ODM for MongoDB
+- **JWT** - Authentication tokens
+- **bcrypt** - Password hashing
 
-### Real-time Features
-- **Socket.IO** for instant data synchronization
-- **Event-driven Architecture** for scalable real-time updates
-- **Automatic Reconnection** with connection resilience
-- **Room-based Broadcasting** for efficient data distribution
+### Deployment & Infrastructure
+- **Firebase Hosting** - Frontend deployment
+- **Railway** - Backend deployment
+- **MongoDB Atlas** - Database hosting
+- **GitHub** - Version control
 
-## 🚀 Getting Started
+## 🔧 Development
 
-### Prerequisites
-- Node.js (v16 or higher)
-- MongoDB (local or cloud instance)
-- npm or yarn package manager
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd stratify
-   ```
-
-2. **Backend Setup**
-   ```bash
-   cd backend
-   npm install
-   
-   # Copy environment file and configure
-   cp .env.example .env
-   # Edit .env with your MongoDB URI and JWT secret
-   
-   # Start the backend server
-   npm start
-   ```
-
-3. **Frontend Setup**
-   ```bash
-   cd frontend
-   npm install
-   
-   # Copy environment file and configure
-   cp .env.example .env
-   # Edit .env with your backend API URL
-   
-   # Start the frontend development server
-   npm run dev
-   ```
-
-4. **Access the Application**
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:5000
-
-### Environment Configuration
-
-#### Backend (.env)
-```env
-NODE_ENV=development
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/stratify
-JWT_SECRET=your-super-secret-jwt-key
-JWT_EXPIRE=30d
-CLIENT_URL=http://localhost:5173
+### Frontend Development
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-#### Frontend (.env)
-```env
-VITE_API_URL=http://localhost:5000/api
-VITE_SOCKET_URL=http://localhost:5000
+### Backend Development
+```bash
+cd backend
+npm install
+npm start
 ```
 
-## 📁 Project Structure
-
-```
-stratify/
-├── backend/                 # Node.js backend application
-│   ├── config/             # Database configuration
-│   ├── middleware/         # Express middleware (auth, validation, etc.)
-│   ├── models/            # MongoDB models (User, Project, Task)
-│   ├── routes/            # API routes (auth, users, projects, tasks)
-│   ├── utils/             # Utility functions
-│   ├── server.js          # Main server file with Socket.IO setup
-│   └── package.json       # Backend dependencies
-├── frontend/               # React frontend application
-│   ├── src/
-│   │   ├── components/    # React components
-│   │   │   ├── auth/      # Authentication components
-│   │   │   ├── dashboard/ # Dashboard and main app components
-│   │   │   ├── sections/  # Landing page sections
-│   │   │   └── ui/        # Reusable UI components
-│   │   ├── contexts/      # React contexts (Auth, Realtime)
-│   │   ├── services/      # API services and Socket.IO client
-│   │   ├── App.jsx        # Main app component
-│   │   └── main.jsx       # App entry point
-│   ├── public/            # Static assets
-│   └── package.json       # Frontend dependencies
-└── README.md              # This file
+### Firebase Deployment
+```bash
+cd frontend
+npm run build
+npx firebase-tools deploy --only hosting
 ```
 
-## 🔧 Key Features Implementation
+### Railway Deployment
+```bash
+cd backend
+npx @railway/cli up
+```
 
-### Real-time System
-- **Socket.IO Integration**: Bidirectional real-time communication
-- **Event Broadcasting**: Efficient room-based event distribution
-- **Automatic Reconnection**: Handles network interruptions gracefully
-- **State Synchronization**: Unified state management across all components
+## 📊 Performance Features
+- **Global CDN**: Firebase's worldwide content delivery
+- **Automatic SSL**: HTTPS enabled by default
+- **Real-time Updates**: Instant synchronization across devices
+- **Optimized Build**: Vite-powered fast builds
+- **Responsive Design**: Works on all screen sizes
 
-### Authentication System
-- **JWT-based Authentication**: Secure token-based auth
-- **Protected Routes**: Route-level access control
-- **Role-based Permissions**: Granular permission system
-- **Session Management**: Persistent login with refresh tokens
+## 🔐 Security Features
+- **JWT Authentication**: Secure token-based auth
+- **Password Hashing**: bcrypt encryption
+- **CORS Protection**: Configured for specific origins
+- **Rate Limiting**: API request throttling
+- **Input Validation**: Server-side validation
+- **Helmet.js**: Security headers
 
-### Data Management
-- **MongoDB Integration**: Flexible document-based storage
-- **Mongoose ODM**: Structured data modeling with validation
-- **Real-time Updates**: Database changes trigger Socket.IO events
-- **Data Relationships**: Proper user, project, and task associations
-
-## 🎯 Usage
-
-### Creating Projects
-1. Navigate to the Dashboard
-2. Click "New Project" 
-3. Fill in project details (name, description, timeline)
-4. Add team members and assign roles
-5. Project appears instantly for all team members
-
-### Managing Tasks
-1. Select a project to view the Kanban board
-2. Click "Add Task" to create new tasks
-3. Drag and drop tasks between columns
-4. Assign tasks to team members
-5. All changes sync in real-time
-
-### Team Collaboration
-1. Add team members to projects with specific roles
-2. Assign tasks and track progress
-3. View live activity feeds
-4. Receive real-time notifications for updates
-
-## 🔒 Security Features
-
-- **JWT Authentication** with secure token storage
-- **Password Hashing** using bcryptjs
-- **Input Validation** and sanitization
-- **CORS Configuration** for secure cross-origin requests
-- **Helmet.js** for security headers
-- **Rate Limiting** to prevent abuse
-
-## 🚀 Production Deployment
-
-### Backend Deployment
-1. Set production environment variables
-2. Configure MongoDB connection
-3. Set up process manager (PM2)
-4. Configure reverse proxy (Nginx)
-5. Enable SSL/HTTPS
-
-### Frontend Deployment
-1. Build the production bundle: `npm run build`
-2. Deploy to static hosting (Vercel, Netlify, etc.)
-3. Configure environment variables for production API
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes and commit: `git commit -m 'Add feature'`
-4. Push to the branch: `git push origin feature-name`
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🎉 Acknowledgments
-
-- Built with modern web technologies for optimal performance
-- Real-time features powered by Socket.IO
-- Responsive design with Tailwind CSS
-- Smooth animations with Framer Motion
+## 📱 Real-time Features
+- **Live Project Updates**: Changes sync instantly
+- **Team Collaboration**: Real-time member activity
+- **Task Management**: Live Kanban board updates
+- **Socket.IO Integration**: Persistent connections
+- **Cross-device Sync**: Updates across all devices
 
 ---
 
-**Status**: ✅ Production Ready  
-**Real-time Features**: ✅ Fully Functional  
-**Last Updated**: April 2026
+**Stratify 2026 - Advanced Project Management System**  
+**Built with ❤️ using modern web technologies**
