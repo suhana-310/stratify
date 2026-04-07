@@ -10,6 +10,7 @@ import authRoutes from './routes/auth.js';
 import userRoutes from './routes/users.js';
 import projectRoutes from './routes/projects.js';
 import taskRoutes from './routes/tasks.js';
+import emailStatusRoutes from './routes/emailStatus.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authenticateSocket } from './middleware/socketAuth.js';
 
@@ -151,6 +152,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/email', emailStatusRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

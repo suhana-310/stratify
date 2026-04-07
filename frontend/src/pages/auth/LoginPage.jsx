@@ -9,6 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
 import { testApiConnection } from '../../utils/apiTest';
+import { testEmailFunctionality, showEmailInstructions } from '../../utils/emailTest';
 
 // Validation schema
 const loginSchema = z.object({
@@ -217,13 +218,29 @@ const LoginPage = () => {
 
             {/* Test API Button (Development Only) */}
             {import.meta.env.DEV && (
-              <Button
-                type="button"
-                onClick={testApiConnection}
-                className="w-full py-2 mt-2 bg-gray-500 hover:bg-gray-600"
-              >
-                Test API Connection
-              </Button>
+              <div className="space-y-2">
+                <Button
+                  type="button"
+                  onClick={testApiConnection}
+                  className="w-full py-2 bg-gray-500 hover:bg-gray-600"
+                >
+                  Test API Connection
+                </Button>
+                <Button
+                  type="button"
+                  onClick={testEmailFunctionality}
+                  className="w-full py-2 bg-blue-500 hover:bg-blue-600"
+                >
+                  Test Email (Send Reset Email)
+                </Button>
+                <Button
+                  type="button"
+                  onClick={showEmailInstructions}
+                  className="w-full py-2 bg-green-500 hover:bg-green-600"
+                >
+                  Email Status & Instructions
+                </Button>
+              </div>
             )}
           </form>
 
