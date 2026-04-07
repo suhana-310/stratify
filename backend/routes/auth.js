@@ -21,9 +21,31 @@ router.get('/email-check', async (req, res) => {
   try {
     const emailConfigured = !!(process.env.EMAIL_USER && process.env.EMAIL_PASS);
     
+    console.log('📧 Email Configuration Check:');
+    console.log('📧 EMAIL_USER:', process.env.EMAIL_USER || 'NOT SET');
+    console.log('📧 EMAIL_PASS:', process.env.EMAIL_PASS ? 'SET' : 'NOT SET');
+    console.log('📧 EMAIL_SERVICE:', process.env.EMAIL_SERVICE || 'NOT SET');
+    console.log('📧 EMAIL_HOST:', process.env.EMAIL_HOST || 'NOT SET');
+    console.log('📧 EMAIL_PORT:', process.env.EMAIL_PORT || 'NOT SET');
+    
+    // Test SMTP connection if configured
+    let smtpTest = null;
+    if (emailConfigured) {
+      try {
+        console.log('🔍 Testing SMTP connection...');
+        const { testSMTPConnection } = await import('../utils/testEmail.js');
+        smtpTest = await testSMTPConnection();
+        console.log('📧 SMTP Test Result:', smtpTest ? 'SUCCESS' : 'FAILED');
+      } catch (error) {
+        console.log('📧 SMTP Test Error:', error.message);
+        smtpTest = false;
+      }
+    }
+    
     res.json({
       success: true,
       emailConfigured,
+      smtpWorking: smtpTest,
       config: {
         service: process.env.EMAIL_SERVICE || 'Not set',
         host: process.env.EMAIL_HOST || 'Not set',
@@ -34,6 +56,7 @@ router.get('/email-check', async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('📧 Email check error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to check email configuration',
@@ -296,24 +319,30 @@ router.post('/forgot-password', validateForgotPassword, async (req, res) => {
     const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
 
     try {
+      console.log('📧 Attempting to send password reset email...');
+      console.log('📧 Email configured:', !!(process.env.EMAIL_USER && process.env.EMAIL_PASS));
+      console.log('📧 Target email:', user.email);
+      
       const { emailTemplates, sendEmail } = await import('../utils/sendEmail.js');
       const emailContent = emailTemplates.passwordReset(user.name, resetUrl);
       
-      await sendEmail({
+      const emailResult = await sendEmail({
         email: user.email,
         subject: emailContent.subject,
         html: emailContent.html
       });
 
-      console.log(`📧 Password reset email sent to ${user.email}`);
+      console.log(`📧 Password reset email result:`, emailResult);
+      console.log(`📧 Email method used:`, emailResult.method);
 
       res.json({
         success: true,
-        message: 'Password reset email sent'
+        message: 'Password reset email sent',
+        method: emailResult.method // Include method for debugging
       });
 
     } catch (emailError) {
-      console.error('Email send error:', emailError);
+      console.error('📧 Email send error:', emailError);
       
       // Clear reset token if email fails
       user.resetPasswordToken = undefined;
@@ -322,7 +351,8 @@ router.post('/forgot-password', validateForgotPassword, async (req, res) => {
 
       return res.status(500).json({
         success: false,
-        message: 'Email could not be sent'
+        message: 'Email could not be sent',
+        error: emailError.message
       });
     }
 
