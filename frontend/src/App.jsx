@@ -18,6 +18,7 @@ import { RealtimeProvider } from './contexts/RealtimeContext'
 import Background3D from './components/3d/Background3D'
 import ErrorBoundary from './components/error/ErrorBoundary'
 import AuthErrorBoundary from './components/auth/AuthErrorBoundary'
+import './utils/apiTest' // Import API test for debugging
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import AuthRedirect from './components/auth/AuthRedirect'
 import LandingPage from './pages/LandingPage'

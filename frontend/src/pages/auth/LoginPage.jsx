@@ -8,6 +8,7 @@ import { Eye, EyeOff, Mail, Lock, Github } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import Button from '../../components/ui/Button';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import { testApiConnection } from '../../utils/apiTest';
 
 // Validation schema
 const loginSchema = z.object({
@@ -213,6 +214,17 @@ const LoginPage = () => {
                 'Sign In'
               )}
             </Button>
+
+            {/* Test API Button (Development Only) */}
+            {import.meta.env.DEV && (
+              <Button
+                type="button"
+                onClick={testApiConnection}
+                className="w-full py-2 mt-2 bg-gray-500 hover:bg-gray-600"
+              >
+                Test API Connection
+              </Button>
+            )}
           </form>
 
           {/* Sign Up Link */}

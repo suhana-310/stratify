@@ -68,25 +68,42 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
+    console.log(`🌐 CORS check for origin: ${origin}`);
+    
+    // Allow specific Firebase domains
+    const allowedOrigins = [
+      'https://stratify31-app.web.app',
+      'https://stratify31-app.firebaseapp.com',
+      'https://stratify-31.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:5174',
+      process.env.CLIENT_URL
+    ];
+    
+    // Check exact matches first
+    if (allowedOrigins.includes(origin)) {
+      console.log(`✅ CORS allowed for exact match: ${origin}`);
+      return callback(null, true);
+    }
+    
     // Allow Vercel domains (including preview deployments)
     if (origin.includes('vercel.app') || 
-        origin.includes('stratify-31.vercel.app') ||
         origin.includes('firebaseapp.com') ||
         origin.includes('web.app') ||
         origin.includes('stratify-2026') ||
-        origin.includes('stratify31-app') ||
-        origin === process.env.CLIENT_URL ||
-        origin === 'http://localhost:5173' ||
-        origin === 'http://localhost:5174') {
+        origin.includes('stratify31-app')) {
+      console.log(`✅ CORS allowed for pattern match: ${origin}`);
       return callback(null, true);
     }
     
     // For development, allow localhost on any port
     if (process.env.NODE_ENV === 'development' && origin.includes('localhost')) {
+      console.log(`✅ CORS allowed for localhost: ${origin}`);
       return callback(null, true);
     }
     
-    // Allow the request
+    // Allow the request (fallback)
+    console.log(`⚠️ CORS allowing unknown origin: ${origin}`);
     callback(null, true);
   },
   credentials: true,
