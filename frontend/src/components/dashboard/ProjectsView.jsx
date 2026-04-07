@@ -623,10 +623,6 @@ export default function ProjectsViewReal({ onProjectSelect }) {
           )}
         </div>
       </div>
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              setShowProjectActions(showProjectActions === project._id ? null : project._id)
-                            }}
       {/* Modals */}
       <NewProjectModal
         isOpen={showNewProjectModal}
