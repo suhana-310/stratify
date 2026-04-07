@@ -26,7 +26,16 @@ class ApiClient {
 
     try {
       console.log(`🌐 API Request: ${config.method || 'GET'} ${url}`);
+      console.log(`🌐 Request config:`, {
+        method: config.method || 'GET',
+        headers: config.headers,
+        hasBody: !!config.body
+      });
+      
       const response = await fetch(url, config);
+      
+      console.log(`🌐 Response status: ${response.status} ${response.statusText}`);
+      console.log(`🌐 Response headers:`, Object.fromEntries(response.headers.entries()));
       
       // Handle different response types
       let data;
@@ -57,8 +66,18 @@ class ApiClient {
       console.error('🌐 API request failed:', {
         url,
         method: config.method || 'GET',
-        error: error.message
+        error: error.message,
+        name: error.name,
+        stack: error.stack
       });
+      
+      // Provide more specific error messages
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        throw new Error('Network error: Unable to connect to server. Please check your internet connection.');
+      } else if (error.message.includes('Failed to fetch')) {
+        throw new Error('Failed to fetch: Network or CORS error. Please try again.');
+      }
+      
       throw error;
     }
   }
