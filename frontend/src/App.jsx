@@ -15,7 +15,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { RealtimeProvider } from './contexts/RealtimeContext'
-import Background3D from './components/3d/Background3D'
 import ErrorBoundary from './components/error/ErrorBoundary'
 import AuthErrorBoundary from './components/auth/AuthErrorBoundary'
 import './utils/apiTest' // Import API test for debugging
@@ -80,17 +79,11 @@ function App() {
                 v7_relativeSplatPath: true
               }}
             >
-            {/* CRITICAL: Global 3D Background - Fixed behind everything */}
-            <ErrorBoundary 
-              fallback={
-                <div className="fixed inset-0 -z-10 bg-gradient-to-br from-[#FFF8E7] via-[#FFD77A]/20 to-[#E6A520]/30" />
-              }
-            >
-              <Background3D />
-            </ErrorBoundary>
+            {/* Clean white background */}
+            <div className="fixed inset-0 -z-10 bg-white" />
             
             {/* Main content with relative positioning */}
-            <div className="relative z-10 min-h-screen"
+            <div className="relative z-10 min-h-screen bg-white"
                  style={{ position: 'relative' }}>
               <Routes>
                 {/* Public Routes */}

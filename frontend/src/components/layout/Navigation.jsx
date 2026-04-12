@@ -24,7 +24,7 @@ const Navigation = () => {
       setScrollProgress(progress);
 
       // Update active section based on scroll position
-      const sections = ['features', 'pricing', 'demo', 'about', 'contact'];
+      const sections = [];
       const currentSection = sections.find(section => {
         const element = document.getElementById(section);
         if (element) {
@@ -43,13 +43,7 @@ const Navigation = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navItems = [
-    { name: 'Features', href: '#features', id: 'features' },
-    { name: 'Pricing', href: '#pricing', id: 'pricing' },
-    { name: 'Demo', href: '#demo', id: 'demo' },
-    { name: 'About', href: '#about', id: 'about' },
-    { name: 'Contact', href: '#contact', id: 'contact' }
-  ];
+  const navItems = [];
 
   const handleNavClick = (href) => {
     setIsOpen(false);
