@@ -6,10 +6,6 @@ A modern, real-time project management system built with React, Node.js, and Mon
 - **Frontend**: https://stratify31-app.web.app
 - **Backend API**: https://stratify-production-57f5.up.railway.app/api
 
-## 🔑 Demo Credentials
-- **Email**: roshankumarsingh021@gmail.com
-- **Password**: Password123
-
 ## ✨ Key Features
 - **Real-time Collaboration** - Socket.IO powered live updates
 - **Responsive Design** - Optimized for mobile, tablet, and desktop
